@@ -1,8 +1,8 @@
 # `ghm` Project Feature and Road Map
 
-## - [ ] Stage One: Basic Feature Setup
+## - [x] Stage One: Basic Feature Setup
 
-### - [ ] Basic Config System
+### - [x] Basic Config System
 
 Require `~/.config/ghm.json` as the config file like below.
 
@@ -14,7 +14,7 @@ Require `~/.config/ghm.json` as the config file like below.
 
 Exit program for no config file (as well as empty or with an unvaild path)
 
-### - [ ] `clone` command
+### - [x] `clone` command
 
 `ghm clone <user>/<repo>`
 
@@ -24,7 +24,7 @@ e.g. `ghm clone vitejs/devtools`
 
 It will clone the repo to `~/code/vitejs/devtools`, create dir if not exist.
 
-### - [ ] `list` command
+### - [x] `list` command
 
 `ghm list`
 
