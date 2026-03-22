@@ -5,5 +5,10 @@
   "editor.formatOnSaveMode": "file",
   "editor.codeActionsOnSave": {
     "source.fixAll.oxc": "explicit"
+  },
+  "files.associations": {
+    // Oxfmt seems bugged for tsconfig.json, so we force it to use json formatter
+    // https://github.com/oxc-project/oxc-vscode/issues/140
+    "tsconfig.json": "json"
   }
 }
