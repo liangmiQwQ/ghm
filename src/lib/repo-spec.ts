@@ -1,23 +1,21 @@
-import { GhmError } from './error.js'
-
 export type RepoSpec = {
   owner: string
   repo: string
 }
 
-export function parseRepoSpec(spec: string): RepoSpec {
+export function parseRepoSpec(spec: string): RepoSpec | string {
   const trimmed = spec.trim()
-  if (!trimmed) throw GhmError('Missing repo spec: <owner>/<repo>', 2)
+  if (!trimmed) return 'Missing repo spec: <owner>/<repo>'
 
   const parts = trimmed.split('/')
-  if (parts.length !== 2) throw GhmError(`Invalid repo spec: ${spec}`, 2)
+  if (parts.length !== 2) return `Invalid repo spec: ${spec}`
 
   const owner = parts[0]?.trim()
   const rawRepo = parts[1]?.trim()
-  if (!owner || !rawRepo) throw GhmError(`Invalid repo spec: ${spec}`, 2)
+  if (!owner || !rawRepo) return `Invalid repo spec: ${spec}`
 
   const repo = rawRepo.endsWith('.git') ? rawRepo.slice(0, -4) : rawRepo
-  if (!repo) throw GhmError(`Invalid repo spec: ${spec}`, 2)
+  if (!repo) return `Invalid repo spec: ${spec}`
 
   return { owner, repo }
 }

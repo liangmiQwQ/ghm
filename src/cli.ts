@@ -1,10 +1,12 @@
 #!/usr/bin/env node
+import { pathToFileURL } from 'node:url'
 import prompts from '@posva/prompts'
 import { cac } from 'cac'
 import { cloneRepo } from './lib/clone.js'
 import { readConfig } from './lib/config.js'
-import { isGhmError } from './lib/error.js'
 import { listRepos } from './lib/list.js'
+import { error } from './lib/output.js'
+import { parseRepoSpec } from './lib/repo-spec.js'
 
 const version = 'ghm'
 
@@ -12,8 +14,14 @@ function log(...args: unknown[]): void {
   console.log(...args)
 }
 
-function error(...args: unknown[]): void {
-  console.error(...args)
+function parseGitExitCode(message: string): number | undefined {
+  if (message === 'git not found in PATH') return 127
+
+  const match = message.match(/^git clone failed \(exit (\d+)\)$/)
+  if (!match) return undefined
+
+  const code = Number(match[1])
+  return Number.isFinite(code) ? code : undefined
 }
 
 export async function main(argv = process.argv.slice(2)): Promise<number> {
@@ -27,7 +35,10 @@ export async function main(argv = process.argv.slice(2)): Promise<number> {
     .command('list', 'List repos under <root>')
     .alias('ls')
     .action(async (options: { config?: string }) => {
-      const { root } = await readConfig({ configPath: options.config })
+      const config = await readConfig({ configPath: options.config })
+      if (typeof config === 'string') return error(config, 2)
+
+      const { root } = config
       const repos = await listRepos(root)
       for (const repo of repos) log(repo)
     })
@@ -38,7 +49,7 @@ export async function main(argv = process.argv.slice(2)): Promise<number> {
     .action(async (spec: string | undefined, options: { config?: string }) => {
       let resolvedSpec = spec
       if (!resolvedSpec) {
-        if (!process.stdin.isTTY) throw new Error('Usage: ghm clone <owner>/<repo>')
+        if (!process.stdin.isTTY) return error('Usage: ghm clone <owner>/<repo>', 2)
 
         const answers = await prompts(
           {
@@ -49,40 +60,46 @@ export async function main(argv = process.argv.slice(2)): Promise<number> {
           },
           {
             onCancel: () => {
-              process.exit(130)
+              error('Cancelled', 130)
             },
           },
         )
 
         resolvedSpec = answers.spec as string | undefined
-        if (!resolvedSpec) throw new Error('Usage: ghm clone <owner>/<repo>')
+        if (!resolvedSpec) return error('Usage: ghm clone <owner>/<repo>', 2)
       }
 
-      const { root } = await readConfig({ configPath: options.config })
-      await cloneRepo(resolvedSpec, { root })
+      const parsedSpec = parseRepoSpec(resolvedSpec)
+      if (typeof parsedSpec === 'string') return error(parsedSpec, 2)
+
+      const config = await readConfig({ configPath: options.config })
+      if (typeof config === 'string') return error(config, 2)
+
+      const result = await cloneRepo(resolvedSpec, { root: config.root })
+      if (typeof result === 'string') return error(result, parseGitExitCode(result) ?? 2)
     })
 
   cli.parse(['node', 'ghm', ...argv], { run: false })
 
   if (cli.args.length > 0) {
-    error(`Unknown command: ${cli.args.join(' ')}`)
-    return 2
+    return error(`Unknown command: ${cli.args.join(' ')}`, 2)
   }
 
   try {
     await cli.runMatchedCommand()
     return 0
   } catch (err) {
-    error((err as Error).message)
-    return isGhmError(err) ? err.exitCode : 1
+    return error((err as Error).message, 1)
   }
 }
 
-main()
-  .then((code) => {
-    process.exitCode = code
-  })
-  .catch((err: unknown) => {
-    error((err as Error).message)
-    process.exitCode = 1
-  })
+const entryFile = process.argv[1]
+if (entryFile && import.meta.url === pathToFileURL(entryFile).href) {
+  void main()
+    .then((code) => {
+      process.exit(code)
+    })
+    .catch((err: unknown) => {
+      error((err as Error).message, 1)
+    })
+}

@@ -1,4 +1,3 @@
-export { GhmError } from './lib/error.js'
 export { readConfig, type GhmConfig, type ReadConfigOptions } from './lib/config.js'
 export { parseRepoSpec, type RepoSpec } from './lib/repo-spec.js'
 export { listRepos } from './lib/list.js'

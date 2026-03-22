@@ -1,3 +1,5 @@
 #!/usr/bin/env node
 'use strict'
-import '../dist/cli.mjs'
+import { main } from '../dist/cli.mjs'
+
+void main()

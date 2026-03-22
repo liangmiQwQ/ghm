@@ -3,7 +3,7 @@ import os from 'node:os'
 import path from 'node:path'
 import { afterEach, expect, test, vi } from 'vite-plus/test'
 import { main as cliMain } from '../src/cli'
-import { GhmError, listRepos, parseRepoSpec, readConfig } from '../src'
+import { listRepos, parseRepoSpec, readConfig } from '../src'
 
 let createdPaths: string[] = []
 
@@ -23,6 +23,7 @@ afterEach(async () => {
 async function runCli(argv: string[]): Promise<{ code: number; stdout: string; stderr: string }> {
   let stdout = ''
   let stderr = ''
+  let exitCode: number | undefined
 
   const stdoutSpy = vi.spyOn(process.stdout, 'write').mockImplementation((chunk: unknown) => {
     stdout += String(chunk)
@@ -32,21 +33,18 @@ async function runCli(argv: string[]): Promise<{ code: number; stdout: string; s
     stderr += String(chunk)
     return true
   })
-  const logSpy = vi.spyOn(console, 'log').mockImplementation((...args: unknown[]) => {
-    stdout += `${args.map(String).join(' ')}\n`
-  })
-  const errorSpy = vi.spyOn(console, 'error').mockImplementation((...args: unknown[]) => {
-    stderr += `${args.map(String).join(' ')}\n`
-  })
+  const exitSpy = vi.spyOn(process, 'exit').mockImplementation(((code?: number) => {
+    exitCode = code ?? 0
+    return undefined as never
+  }) as never)
 
   try {
     const code = await cliMain(argv)
-    return { code, stdout, stderr }
+    return { code: exitCode ?? code, stdout, stderr }
   } finally {
     stdoutSpy.mockRestore()
     stderrSpy.mockRestore()
-    logSpy.mockRestore()
-    errorSpy.mockRestore()
+    exitSpy.mockRestore()
   }
 }
 
@@ -54,9 +52,9 @@ test('parseRepoSpec', () => {
   expect(parseRepoSpec('vitejs/vite')).toEqual({ owner: 'vitejs', repo: 'vite' })
   expect(parseRepoSpec('vitejs/vite.git')).toEqual({ owner: 'vitejs', repo: 'vite' })
 
-  expect(() => parseRepoSpec('')).toThrow(GhmError)
-  expect(() => parseRepoSpec('vitejs')).toThrow(GhmError)
-  expect(() => parseRepoSpec('vitejs/vite/extra')).toThrow(GhmError)
+  expect(parseRepoSpec('')).toBeTypeOf('string')
+  expect(parseRepoSpec('vitejs')).toBeTypeOf('string')
+  expect(parseRepoSpec('vitejs/vite/extra')).toBeTypeOf('string')
 })
 
 test('listRepos lists owner/repo dirs', async () => {
@@ -82,10 +80,13 @@ test('readConfig validates config file and root', async () => {
   await fs.writeFile(configPath, JSON.stringify({ root }, null, 2))
 
   const config = await readConfig({ configPath })
+  expect(config).not.toBeTypeOf('string')
+  if (typeof config === 'string') throw new Error(config)
   expect(config.root).toBe(root)
 
   await fs.writeFile(configPath, JSON.stringify({ root: path.join(root, 'nope') }, null, 2))
-  await expect(readConfig({ configPath })).rejects.toBeInstanceOf(GhmError)
+  const invalidConfig = await readConfig({ configPath })
+  expect(invalidConfig).toBeTypeOf('string')
 })
 
 test('cli --help prints help', async () => {
