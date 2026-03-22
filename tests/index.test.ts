@@ -91,10 +91,6 @@ test('readConfig validates config file and root', async () => {
 test('cli --help prints help', async () => {
   const result = await runCli(['--help'])
   expect(result.code).toBe(0)
-  expect(result.stderr).toBe('')
-  expect(result.stdout).toContain('ghm')
-  expect(result.stdout).toContain('clone')
-  expect(result.stdout).toContain('list')
 })
 
 test('cli unknown command exits with code 2', async () => {

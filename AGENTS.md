@@ -30,7 +30,7 @@ Keep AGENTS.md updated with the project codebase. Consider if there is need to m
 
 Never use emoji in docs.
 
-Write simple code and make function reusable if possible. Use Unix philosophy to design your code (Every function should only do one thing and should not be too long or complex.)
+Write simple code and make function reusable if possible. Use Unix philosophy to design your code (Every function should only do one thing and should not be too long or complex.) Tests should also be simple.
 
 The project is designed for opensource developers on GitHub using MacOS or Linux, consider about it if you need to make any decision. Do not import features out of its scope.
 
