@@ -2,6 +2,10 @@
 
 `ghm`, the *G*it*H*ub Project *M*anager for opensource.
 
+```
+npm i -g @liangmi/ghm
+```
+
 ## Stage One
 
 ### Config
