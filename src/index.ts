@@ -1,4 +1,3 @@
-export { readConfig, type GhmConfig, type ReadConfigOptions } from './lib/config.js'
-export { parseRepoSpec, type RepoSpec } from './lib/repo-spec.js'
-export { listRepos } from './lib/list.js'
-export { cloneRepo } from './lib/clone.js'
+export async function main() {
+  console.log('Hello, World')
+}

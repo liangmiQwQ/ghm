@@ -36,14 +36,13 @@
     "prepublishOnly": "vp run build",
     "prepare": "vp config"
   },
-  "dependencies": {
-    "@posva/prompts": "^2.4.4",
-    "cac": "^7.0.0"
-  },
   "devDependencies": {
+    "@posva/prompts": "^2.4.4",
     "@types/node": "^25.5.0",
     "@typescript/native-preview": "7.0.0-dev.20260316.1",
     "bumpp": "^11.0.1",
+    "cac": "^7.0.0",
+    "picocolors": "^1.1.1",
     "tsx": "^4.21.0",
     "typescript": "^6.0.2",
     "vite-plus": "^0.1.13"

@@ -5,9 +5,10 @@ export default defineConfig({
     '*': 'vp check --fix',
   },
   pack: {
+    fixedExtension: true,
+    platform: 'node',
     entry: {
       index: 'src/index.ts',
-      cli: 'src/cli.ts',
     },
     dts: {
       tsgo: true,

@@ -11,14 +11,10 @@ overrides:
 importers:
 
   .:
-    dependencies:
+    devDependencies:
       '@posva/prompts':
         specifier: ^2.4.4
         version: 2.4.4
-      cac:
-        specifier: ^7.0.0
-        version: 7.0.0
-    devDependencies:
       '@types/node':
         specifier: ^25.5.0
         version: 25.5.0
@@ -28,6 +24,12 @@ importers:
       bumpp:
         specifier: ^11.0.1
         version: 11.0.1
+      cac:
+        specifier: ^7.0.0
+        version: 7.0.0
+      picocolors:
+        specifier: ^1.1.1
+        version: 1.1.1
       tsx:
         specifier: ^4.21.0
         version: 4.21.0
