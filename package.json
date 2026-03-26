@@ -22,7 +22,6 @@
   "type": "module",
   "exports": {
     ".": "./dist/index.mjs",
-    "./cli": "./dist/cli.mjs",
     "./package.json": "./package.json"
   },
   "publishConfig": {
@@ -42,6 +41,7 @@
     "@typescript/native-preview": "7.0.0-dev.20260316.1",
     "bumpp": "^11.0.1",
     "cac": "^7.0.0",
+    "jsonc-parser": "^3.3.1",
     "picocolors": "^1.1.1",
     "tsx": "^4.21.0",
     "typescript": "^6.0.2",
