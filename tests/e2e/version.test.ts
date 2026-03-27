@@ -1,10 +1,10 @@
 import { describe, expect, test } from 'vitest'
 
-import { execNode } from '../exec'
+import { exec } from '../exec'
 
 describe('ghm cli', () => {
   test('--version', async () => {
-    const result = await execNode(['bin/cli.mjs', '--version'])
+    const result = await exec(['--version'])
 
     expect(result.exitCode).toBe(0)
     expect(result.stdout).toMatchSnapshot()

@@ -3,7 +3,7 @@ import os from 'node:os'
 import path from 'node:path'
 import { afterEach, describe, expect, test } from 'vitest'
 
-import { execNode } from '../exec'
+import { exec } from '../exec'
 
 const tempDirs: string[] = []
 
@@ -14,26 +14,7 @@ afterEach(() => {
   tempDirs.length = 0
 })
 
-describe('ghm stage one', () => {
-  test('--config loads custom config path', async () => {
-    const tempDir = createTempDir()
-    const rootDir = path.join(tempDir, 'code')
-    mkdirSync(path.join(rootDir, 'vitejs', 'vite'), { recursive: true })
-    const configPath = createConfig(tempDir, rootDir)
-
-    const result = await execNode(['bin/cli.mjs', '--config', configPath, 'list'])
-
-    expect(result.exitCode).toBe(0)
-    expect(result.stdout.trim()).toBe('vitejs/vite')
-  })
-
-  test('--config reports missing file', async () => {
-    const result = await execNode(['bin/cli.mjs', '--config', '/path/not-found/ghm.json', 'list'])
-
-    expect(result.exitCode).toBe(1)
-    expect(result.stderr).toContain(`Couldn't find config file`)
-  })
-
+describe('ghm clone', () => {
   test('clone creates <root>/<owner>/<repo>', async () => {
     const tempDir = createTempDir()
     const rootDir = path.join(tempDir, 'code')
@@ -41,7 +22,7 @@ describe('ghm stage one', () => {
     const configPath = createConfig(tempDir, rootDir)
     const fakeGitDir = createFakeGit(tempDir)
 
-    const result = await execNode(['bin/cli.mjs', '-c', configPath, 'clone', 'vitejs/devtools'], {
+    const result = await exec(['-c', configPath, 'clone', 'vitejs/devtools'], {
       env: {
         PATH: `${fakeGitDir}${path.delimiter}${process.env.PATH || ''}`,
       },
@@ -50,7 +31,7 @@ describe('ghm stage one', () => {
     expect(result.exitCode).toBe(0)
     expect(result.stdout).toContain('Cloned vitejs/devtools')
 
-    const listResult = await execNode(['bin/cli.mjs', '-c', configPath, 'list'])
+    const listResult = await exec(['-c', configPath, 'list'])
     expect(listResult.stdout.trim()).toBe('vitejs/devtools')
   })
 
@@ -60,7 +41,7 @@ describe('ghm stage one', () => {
     mkdirSync(rootDir, { recursive: true })
     const configPath = createConfig(tempDir, rootDir)
 
-    const result = await execNode(['bin/cli.mjs', '-c', configPath, 'clone', 'vitejs'])
+    const result = await exec(['-c', configPath, 'clone', 'vitejs'])
 
     expect(result.exitCode).toBe(1)
     expect(result.stderr).toContain('Invalid repository format')
@@ -72,38 +53,10 @@ describe('ghm stage one', () => {
     mkdirSync(path.join(rootDir, 'vitejs', 'devtools'), { recursive: true })
     const configPath = createConfig(tempDir, rootDir)
 
-    const result = await execNode(['bin/cli.mjs', '-c', configPath, 'clone', 'vitejs/devtools'])
+    const result = await exec(['-c', configPath, 'clone', 'vitejs/devtools'])
 
     expect(result.exitCode).toBe(1)
     expect(result.stderr).toContain('Repository already exists')
-  })
-
-  test('list shows empty state', async () => {
-    const tempDir = createTempDir()
-    const rootDir = path.join(tempDir, 'code')
-    mkdirSync(rootDir, { recursive: true })
-    const configPath = createConfig(tempDir, rootDir)
-
-    const result = await execNode(['bin/cli.mjs', '-c', configPath, 'list'])
-
-    expect(result.exitCode).toBe(0)
-    expect(result.stdout).toContain('No repositories found')
-  })
-
-  test('list outputs sorted owner/repo pairs', async () => {
-    const tempDir = createTempDir()
-    const rootDir = path.join(tempDir, 'code')
-
-    mkdirSync(path.join(rootDir, 'vuejs', 'core'), { recursive: true })
-    mkdirSync(path.join(rootDir, 'vitejs', 'vite'), { recursive: true })
-    mkdirSync(path.join(rootDir, 'vuejs', 'router'), { recursive: true })
-
-    const configPath = createConfig(tempDir, rootDir)
-
-    const result = await execNode(['bin/cli.mjs', '-c', configPath, 'list'])
-
-    expect(result.exitCode).toBe(0)
-    expect(result.stdout.trim().split('\n')).toEqual(['vitejs/vite', 'vuejs/core', 'vuejs/router'])
   })
 })
 

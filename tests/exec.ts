@@ -6,7 +6,7 @@ export type ExecResult = {
   exitCode: number | undefined
 }
 
-export async function exec(
+export async function baseExec(
   command: string,
   args: string[] = [],
   options: { cwd?: string; env?: NodeJS.ProcessEnv } = {},
@@ -29,6 +29,14 @@ export async function exec(
   }
 }
 
-export function execNode(args: string[], options: { cwd?: string; env?: NodeJS.ProcessEnv } = {}) {
-  return exec('node', args, options)
+export function exec(args: string[], options: { cwd?: string; env?: NodeJS.ProcessEnv } = {}) {
+  return baseExec('node', ['bin/cli.mjs', ...args], options)
+}
+
+export function execWithConfig(
+  args: string[],
+  configPath: string,
+  options: { cwd?: string; env?: NodeJS.ProcessEnv } = {},
+) {
+  return exec(['--config', configPath, ...args], options)
 }

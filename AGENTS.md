@@ -24,7 +24,7 @@ Vite+ is used as the project manager. Use `vp install` to install dependencies, 
 
 Update tests or add new tests after you add a new feature or fix a bug if possible.
 
-Run `vp test` and `vp check` (lint and format) after you make changes.
+Run `vp run test` and `vp check` (lint and format) after you make changes.
 
 Keep AGENTS.md updated with the project codebase. Consider if there is need to modify AGENTS.md after your changes. Don't store meaningless things like project structure or project status in AGENTS.md.
 
