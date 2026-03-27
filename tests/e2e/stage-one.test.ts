@@ -28,7 +28,7 @@ describe('ghm stage one', () => {
   })
 
   test('--config reports missing file', async () => {
-    const result = await execNode(['bin/cli.mjs', '--config', '/path/not-found/ghm.jsonc', 'list'])
+    const result = await execNode(['bin/cli.mjs', '--config', '/path/not-found/ghm.json', 'list'])
 
     expect(result.exitCode).toBe(1)
     expect(result.stderr).toContain(`Couldn't find config file`)
@@ -114,7 +114,7 @@ function createTempDir(): string {
 }
 
 function createConfig(tempDir: string, rootDir: string): string {
-  const configPath = path.join(tempDir, 'ghm.jsonc')
+  const configPath = path.join(tempDir, 'ghm.json')
   writeFileSync(configPath, JSON.stringify({ root: rootDir }, null, 2), 'utf8')
   return configPath
 }

@@ -14,7 +14,7 @@ export type GlobalUserConfig = {
 }
 
 export function getDefaultConfigPath(): string {
-  return path.join(homedir(), '.config', 'ghm.jsonc')
+  return path.join(homedir(), '.config', 'ghm.json')
 }
 
 export function loadConfig(configPath?: string): GlobalUserConfig {
