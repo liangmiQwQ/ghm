@@ -14,7 +14,8 @@ type GlobalOptions = { config?: string }
 function withConfig<T extends any[]>(
   handler: (config: GlobalUserConfig, ...args: T) => Promise<void> | void,
 ) {
-  return async (options: GlobalOptions, ...args: T): Promise<void> => {
+  return async (...args: T): Promise<void> => {
+    const options = args[args.length - 1] as GlobalOptions
     const config = loadConfig(options.config)
     await syncShellrcForRun(config)
     return handler(config, ...args)
