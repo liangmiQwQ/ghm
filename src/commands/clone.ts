@@ -2,9 +2,9 @@ import { existsSync, mkdirSync } from 'node:fs'
 import path from 'node:path'
 import { spawnSync } from 'node:child_process'
 import pc from 'picocolors'
-
 import type { GlobalUserConfig } from '../config/config'
 import { error } from '../output/error'
+import { success, muted, highlight } from '../output/format'
 
 export function runCloneCommand(repo: string, config: GlobalUserConfig): void {
   const parsedRepo = parseRepo(repo)
@@ -12,7 +12,7 @@ export function runCloneCommand(repo: string, config: GlobalUserConfig): void {
   const targetDir = path.join(ownerDir, parsedRepo.name)
 
   if (existsSync(targetDir)) {
-    error(`Repository already exists at ${targetDir}`)
+    error(`Repository already exists at ${highlight(targetDir)}`)
   }
 
   mkdirSync(ownerDir, { recursive: true })
@@ -36,7 +36,8 @@ export function runCloneCommand(repo: string, config: GlobalUserConfig): void {
     error(`Git clone failed for ${parsedRepo.owner}/${parsedRepo.name}`, result.status)
   }
 
-  console.log(pc.green(`Cloned ${parsedRepo.owner}/${parsedRepo.name} to ${targetDir}`))
+  success(`Cloned ${pc.bold(`${parsedRepo.owner}/${parsedRepo.name}`)}`)
+  console.log(`  ${muted('→')} ${highlight(targetDir)}`)
 }
 
 function parseRepo(repo: string): { owner: string; name: string } {

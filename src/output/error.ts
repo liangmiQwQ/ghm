@@ -12,10 +12,10 @@ export function warn(message: string): void {
 /**
  * Prints an error message to stderr and exits the process.
  *
- * - Uses an `ERROR` prefix with background color
+ * - Uses an ERROR prefix with background color and X icon
  * - Returns `never` because it calls `process.exit()`.
  */
 export function error(message: string, exitCode: number = 1): never {
-  console.error(`${pc.white(pc.bgRed(' ERROR '))} ${pc.red(message)}`)
+  console.error(`${pc.red('✗')} ${pc.white(pc.bgRed(' ERROR '))} ${pc.red(message)}`)
   process.exit(exitCode)
 }
