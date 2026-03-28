@@ -34,6 +34,19 @@ Show the all repos available.
 
 ## - [ ] Stage Two: Better UX
 
+This stage will import some features related to shell and shellrc. We need to support fish, zsh, bash.
+
+All the modify to shellrc should be controlled by ghm. So, we need to storage user's setting like alias in ghmrc config, and maintain a struct like this in shellrc file and update it each run.
+
+```bash
+#_GHM_START_
+# Please do not edit the comments `#_GHM_START_` or `#_GHM_END_`, which probably makes ghm feature broken.
+... code there
+#_GHM_END_
+```
+
+Use `preunistall` to clear the config when uninstall.
+
 ### - [ ] `setup` command
 
 Add a `ghm setup` command, to setup the settings and environment needed.
@@ -55,7 +68,7 @@ A wrapper of `cd` command
 
 Display a prompt, allow users to enter repo name to cd to it, also allow user cd to the root path or the owner path. (like cd to `~/code`, or `~/code/vitejs`)
 
-Because it needs to cd to the target directory, it needs to be a shell script. We change the `bin` name to `ghmi` and use a cli wrapper `ghm`(function) to call it with the support of fish, zsh, bash. use `preunistall` to clear the config when users uninstall.
+Because it needs to cd to the target directory, it needs to be a shell script. We change the `bin` name to `ghmi` and use a cli wrapper `ghm`(function) to call.
 
 ## - [ ] Stage Three: Add `fork` and `remote` control
 
