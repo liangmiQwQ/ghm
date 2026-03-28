@@ -6,7 +6,7 @@
 npm i -g @liangmi/ghm
 ```
 
-## Stage One
+## Usage
 
 ### Config
 
