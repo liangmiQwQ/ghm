@@ -34,32 +34,23 @@ export function runListCommand(config: GlobalUserConfig): void {
     return
   }
 
-  console.log(highlight(config.root))
+  console.log(muted(`in ${highlight(config.root)}:`))
+  console.log()
 
   const ownerEntries = Array.from(ownerEntriesSorted(ownerRepos))
-  const ownerCount = ownerEntries.length
 
-  for (let i = 0; i < ownerCount; i++) {
-    const [owner, repos] = ownerEntries[i]
-    const isLastOwner = i === ownerCount - 1
-    const ownerBranch = isLastOwner ? icons.tree.corner : icons.tree.branch
+  for (const [owner, repos] of ownerEntries) {
+    console.log(`${pc.cyan(owner)}/`)
 
-    console.log(`${ownerBranch} ${pc.bold(owner)}/`)
-
-    const repoCount = repos.length
-    for (let j = 0; j < repoCount; j++) {
-      const repo = repos[j]
-      const isLastRepo = j === repoCount - 1
-      const repoPrefix = isLastOwner ? '   ' : `${icons.tree.vertical} `
-      const repoBranch = isLastRepo ? icons.tree.corner : icons.tree.branch
-
-      console.log(`${repoPrefix}${repoBranch} ${repo}`)
+    for (const repo of repos) {
+      console.log(`  ${muted('─')} ${repo}`)
     }
+
+    console.log()
   }
 
   const totalRepos = allRepos.length
   const totalOwners = ownerRepos.size
-  console.log()
   console.log(
     `${muted(`${totalRepos} repositor${totalRepos === 1 ? 'y' : 'ies'} in ${totalOwners} organization${totalOwners === 1 ? '' : 's'}`)}`,
   )
@@ -68,7 +59,7 @@ export function runListCommand(config: GlobalUserConfig): void {
 function* ownerEntriesSorted(map: Map<string, string[]>): Generator<[string, string[]]> {
   const sorted = Array.from(map.entries()).sort(([a], [b]) => a.localeCompare(b))
   for (const entry of sorted) {
-    yield entry
+    yield [entry[0], entry[1].sort()]
   }
 }
 

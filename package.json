@@ -30,7 +30,7 @@
   },
   "scripts": {
     "build": "vp pack",
-    "dev": "tsx src/index.ts",
+    "dev": "tsx src/index.ts --config ghmrc.json",
     "preview": "node bin/cli.mjs",
     "test": "vp run build && vp test run",
     "check": "vp check",

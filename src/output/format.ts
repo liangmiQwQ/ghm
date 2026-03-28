@@ -14,6 +14,29 @@ export const icons = {
   },
 }
 
+const spinnerFrames = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏']
+
+export interface Spinner {
+  interval: NodeJS.Timeout
+  message: string
+}
+
+export function startSpinner(message: string): Spinner {
+  let frameIndex = 0
+  const interval = setInterval(() => {
+    const frame = pc.cyan(spinnerFrames[frameIndex])
+    process.stdout.write(`\r${frame} ${message}`)
+    frameIndex = (frameIndex + 1) % spinnerFrames.length
+  }, 80)
+
+  return { interval, message }
+}
+
+export function stopSpinner(spinner: Spinner): void {
+  clearInterval(spinner.interval)
+  process.stdout.write('\r' + ' '.repeat(spinner.message.length + 2) + '\r')
+}
+
 export function success(message: string): void {
   console.log(`${icons.success} ${pc.green(message)}`)
 }

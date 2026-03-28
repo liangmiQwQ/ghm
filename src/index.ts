@@ -11,9 +11,9 @@ cli.option('-c, --config <path>', 'Use a custom config file path')
 cli
   .command('clone <repo>', 'Clone a repository to <root>/<owner>/<repo>')
   .alias('c')
-  .action((repo: string, options: { config?: string }) => {
+  .action(async (repo: string, options: { config?: string }) => {
     const config = loadConfig(options.config)
-    runCloneCommand(repo, config)
+    await runCloneCommand(repo, config)
   })
 
 cli

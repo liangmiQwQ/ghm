@@ -19,3 +19,7 @@ export function error(message: string, exitCode: number = 1): never {
   console.error(`${pc.red('✗')} ${pc.white(pc.bgRed(' ERROR '))} ${pc.red(message)}`)
   process.exit(exitCode)
 }
+
+export function formatError(message: string): string {
+  return `${pc.red('✗')} ${pc.red(message)}`
+}

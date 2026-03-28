@@ -2,7 +2,12 @@
 # Mock git for testing - simulates git clone
 
 if [ "$1" = "clone" ]; then
-  target="$3"
+  # Handle both: git clone <url> <target> and git clone --progress <url> <target>
+  if [ "$2" = "--progress" ]; then
+    target="$4"
+  else
+    target="$3"
+  fi
   mkdir -p "$target"
   echo "Cloning into '$target'..."
   exit 0

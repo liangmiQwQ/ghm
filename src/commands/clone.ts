@@ -1,12 +1,12 @@
 import { existsSync, mkdirSync } from 'node:fs'
 import path from 'node:path'
-import { spawnSync } from 'node:child_process'
+import { spawn } from 'node:child_process'
 import pc from 'picocolors'
 import type { GlobalUserConfig } from '../config/config'
 import { error } from '../output/error'
-import { success, muted, highlight } from '../output/format'
+import { success, muted, highlight, startSpinner, stopSpinner } from '../output/format'
 
-export function runCloneCommand(repo: string, config: GlobalUserConfig): void {
+export async function runCloneCommand(repo: string, config: GlobalUserConfig): Promise<void> {
   const parsedRepo = parseRepo(repo)
   const ownerDir = path.join(config.root, parsedRepo.owner)
   const targetDir = path.join(ownerDir, parsedRepo.name)
@@ -18,26 +18,49 @@ export function runCloneCommand(repo: string, config: GlobalUserConfig): void {
   mkdirSync(ownerDir, { recursive: true })
 
   const cloneUrl = `https://github.com/${parsedRepo.owner}/${parsedRepo.name}.git`
-  const result = spawnSync('git', ['clone', cloneUrl, targetDir], {
-    encoding: 'utf8',
-    env: process.env,
-    shell: true,
-  })
+  const spinner = startSpinner(`Cloning ${pc.bold(`${parsedRepo.owner}/${parsedRepo.name}`)}...`)
 
-  if (result.error) {
-    error(`Failed to run git clone: ${result.error.message}`)
-  }
-
-  if (typeof result.status === 'number' && result.status !== 0) {
-    if (result.stderr) {
-      process.stderr.write(result.stderr)
+  try {
+    await runGitClone(cloneUrl, targetDir)
+    stopSpinner(spinner)
+    success(`Cloned ${pc.bold(`${parsedRepo.owner}/${parsedRepo.name}`)}`)
+    console.log(`  ${muted('→')} ${highlight(targetDir)}`)
+  } catch (err) {
+    stopSpinner(spinner)
+    if (err instanceof Error) {
+      error(`Git clone failed for ${parsedRepo.owner}/${parsedRepo.name}: ${err.message}`)
+    } else {
+      error(`Git clone failed for ${parsedRepo.owner}/${parsedRepo.name}`)
     }
-
-    error(`Git clone failed for ${parsedRepo.owner}/${parsedRepo.name}`, result.status)
   }
+}
 
-  success(`Cloned ${pc.bold(`${parsedRepo.owner}/${parsedRepo.name}`)}`)
-  console.log(`  ${muted('→')} ${highlight(targetDir)}`)
+function runGitClone(url: string, targetDir: string): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const child = spawn('git', ['clone', '--progress', url, targetDir], {
+      env: process.env,
+      shell: true,
+    })
+
+    let stderr = ''
+
+    child.stderr?.on('data', (data) => {
+      stderr += data.toString()
+    })
+
+    child.on('close', (code) => {
+      if (code === 0) {
+        resolve()
+      } else {
+        const error = new Error(stderr || `Git clone exited with code ${code}`)
+        reject(error)
+      }
+    })
+
+    child.on('error', (err) => {
+      reject(err)
+    })
+  })
 }
 
 function parseRepo(repo: string): { owner: string; name: string } {
