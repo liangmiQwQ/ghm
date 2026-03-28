@@ -1,3 +1,5 @@
+import path from 'node:path'
+import fs from 'node:fs/promises'
 import { x } from 'tinyexec'
 
 export type ExecResult = {
@@ -6,15 +8,18 @@ export type ExecResult = {
   exitCode: number | undefined
 }
 
-export async function baseExec(
-  command: string,
-  args: string[] = [],
+export async function exec(
+  args: string[],
   options: { cwd?: string; env?: NodeJS.ProcessEnv } = {},
-): Promise<ExecResult> {
+) {
+  // Clean temp dir
+  const tempDir = path.join(import.meta.dirname, 'fixtures/.temp')
+  await fs.rm(tempDir, { recursive: true, force: true })
+
   const cwd = options.cwd ?? process.cwd()
   const env = options.env ? { ...process.env, ...options.env } : process.env
 
-  const output = await x(command, args, {
+  const output = await x('node', ['bin/cli.mjs', ...args], {
     throwOnError: false,
     nodeOptions: {
       cwd,
@@ -29,14 +34,16 @@ export async function baseExec(
   }
 }
 
-export function exec(args: string[], options: { cwd?: string; env?: NodeJS.ProcessEnv } = {}) {
-  return baseExec('node', ['bin/cli.mjs', ...args], options)
-}
-
 export function execWithConfig(
   args: string[],
   configPath: string,
   options: { cwd?: string; env?: NodeJS.ProcessEnv } = {},
 ) {
   return exec(['--config', configPath, ...args], options)
+}
+
+export function execFixture(name: string, args: string[]) {
+  const cwd = path.join(import.meta.dirname, 'fixtures', name)
+  const configPath = path.join(cwd, 'ghmrc.json')
+  return execWithConfig(args, configPath, { cwd })
 }
