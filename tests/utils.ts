@@ -8,19 +8,22 @@ export type ExecResult = {
   exitCode: number | undefined
 }
 
+export const tempDir = path.join(import.meta.dirname, 'fixtures/.temp')
+
 export async function exec(
   args: string[],
   options: { cwd?: string; env?: NodeJS.ProcessEnv } = {},
 ) {
   // Clean temp dir
-  const tempDir = path.join(import.meta.dirname, 'fixtures/.temp')
   await fs.rm(tempDir, { recursive: true, force: true })
   await fs.mkdir(tempDir, { recursive: true })
 
   const cwd = options.cwd ?? process.cwd()
   const env = options.env ? { ...process.env, ...options.env } : process.env
 
-  const output = await x('node', ['bin/cli.mjs', ...args], {
+  const cli = path.resolve(import.meta.dirname, '../bin/cli.mjs')
+
+  const output = await x('node', [cli, ...args], {
     throwOnError: false,
     nodeOptions: {
       cwd,
