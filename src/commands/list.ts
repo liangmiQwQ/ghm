@@ -50,7 +50,7 @@ export function runListCommand(config: GlobalUserConfig): void {
   const ownerEntries = Array.from(ownerEntriesSorted(ownerRepos))
 
   for (const [owner, repos] of ownerEntries) {
-    console.log(bold(owner))
+    console.log(`${bold(owner)} ${muted(`(${repos.length})`)}`)
 
     for (const repo of repos) {
       console.log(`${muted(` - `)}${repo}`)
