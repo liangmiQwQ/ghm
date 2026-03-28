@@ -1,11 +1,11 @@
 import { existsSync, readFileSync, statSync } from 'node:fs'
+import { homedir } from 'node:os'
 import path from 'node:path'
 import untildify from 'untildify'
 
 import { parse } from 'jsonc-parser'
 
 import { error } from '../output/error'
-import { homedir } from 'node:os'
 
 export type GlobalUserConfig = {
   root: string
@@ -14,7 +14,7 @@ export type GlobalUserConfig = {
 }
 
 export function getDefaultConfigPath(): string {
-  return path.join(homedir(), '.config', 'ghm.jsonc')
+  return path.join(homedir(), '.config', 'ghmrc.json')
 }
 
 export function loadConfig(configPath?: string): GlobalUserConfig {
@@ -48,7 +48,7 @@ function parseConfig(jsonc: string, configFilePath: string): GlobalUserConfig {
     invalidConfigError('"root" must be a non-empty string')
   }
 
-  const rootPath = path.resolve(untildify(root))
+  const rootPath = path.resolve(path.dirname(configFilePath), untildify(root))
 
   if (!existsSync(rootPath)) {
     invalidConfigError(`"root" directory does not exist`)

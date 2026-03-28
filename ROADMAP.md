@@ -4,11 +4,11 @@
 
 ### - [x] Basic Config System
 
-Require `~/.config/ghm.jsonc` as the config file like below.
+Require `~/.config/ghmrc.json` as the config file like below.
 
-```jsonc
+```json
 {
-  "root": "~/code",
+  "root": "~/code"
 }
 ```
 
@@ -65,12 +65,12 @@ It's a big feature, need `gh` and `git` commands work together, leave a blank fo
 
 ### - [ ] `editor` option
 
-Add `editor` option in `~/.config/ghm.jsonc`, modify `setup` command as well.
+Add `editor` option in `~/.config/ghmrc.json`, modify `setup` command as well.
 
-```jsonc
+```json
 {
   "root": "~/code",
-  "editor": "code",
+  "editor": "code"
 }
 ```
 
