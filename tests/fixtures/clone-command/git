@@ -1,0 +1,13 @@
+#!/bin/sh
+# Mock git for testing - simulates git clone
+
+if [ "$1" = "clone" ]; then
+  target="$3"
+  mkdir -p "$target"
+  echo "Cloning into '$target'..."
+  exit 0
+fi
+
+# For any other git command, just succeed
+echo "mock-git: $*"
+exit 0
