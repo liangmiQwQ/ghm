@@ -1,4 +1,4 @@
 {
   "$schema": "../../../config_schema.json",
-  "root": "./root"
+  "root": "../.temp/existing-root"
 }

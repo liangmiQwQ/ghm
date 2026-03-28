@@ -1,42 +1,63 @@
 import { existsSync, mkdirSync } from 'node:fs'
 import path from 'node:path'
-import { spawnSync } from 'node:child_process'
+import { spawn } from 'node:child_process'
 import pc from 'picocolors'
-
 import type { GlobalUserConfig } from '../config/config'
 import { error } from '../output/error'
+import { success, muted, highlight, startSpinner, stopSpinner, toTildePath } from '../output/format'
 
-export function runCloneCommand(repo: string, config: GlobalUserConfig): void {
+export async function runCloneCommand(repo: string, config: GlobalUserConfig): Promise<void> {
   const parsedRepo = parseRepo(repo)
   const ownerDir = path.join(config.root, parsedRepo.owner)
   const targetDir = path.join(ownerDir, parsedRepo.name)
 
   if (existsSync(targetDir)) {
-    error(`Repository already exists at ${targetDir}`)
+    error(`Repository already exists at ${highlight(toTildePath(targetDir))}`)
   }
 
   mkdirSync(ownerDir, { recursive: true })
 
   const cloneUrl = `https://github.com/${parsedRepo.owner}/${parsedRepo.name}.git`
-  const result = spawnSync('git', ['clone', cloneUrl, targetDir], {
-    encoding: 'utf8',
-    env: process.env,
-    shell: true,
+  const spinner = startSpinner(`Cloning ${pc.bold(`${parsedRepo.owner}/${parsedRepo.name}`)}...`)
+
+  try {
+    await runGitClone(cloneUrl, targetDir)
+    stopSpinner(spinner)
+    success(`Cloned ${pc.bold(`${parsedRepo.owner}/${parsedRepo.name}`)}`)
+    console.log(`  ${muted('→')} ${highlight(toTildePath(targetDir))}`)
+  } catch (err) {
+    stopSpinner(spinner)
+    const details = err instanceof Error ? `: ${err.message}` : ''
+    error(`Git clone failed for ${parsedRepo.owner}/${parsedRepo.name}${details}`)
+  }
+}
+
+function runGitClone(url: string, targetDir: string): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const child = spawn('git', ['clone', '--progress', url, targetDir], {
+      env: process.env,
+      shell: true,
+    })
+
+    let stderr = ''
+
+    child.stderr?.on('data', (data) => {
+      stderr += data.toString()
+    })
+
+    child.on('close', (code) => {
+      if (code === 0) {
+        resolve()
+      } else {
+        const error = new Error(stderr || `Git clone exited with code ${code}`)
+        reject(error)
+      }
+    })
+
+    child.on('error', (err) => {
+      reject(err)
+    })
   })
-
-  if (result.error) {
-    error(`Failed to run git clone: ${result.error.message}`)
-  }
-
-  if (typeof result.status === 'number' && result.status !== 0) {
-    if (result.stderr) {
-      process.stderr.write(result.stderr)
-    }
-
-    error(`Git clone failed for ${parsedRepo.owner}/${parsedRepo.name}`, result.status)
-  }
-
-  console.log(pc.green(`Cloned ${parsedRepo.owner}/${parsedRepo.name} to ${targetDir}`))
 }
 
 function parseRepo(repo: string): { owner: string; name: string } {
