@@ -15,6 +15,7 @@ export async function exec(
   // Clean temp dir
   const tempDir = path.join(import.meta.dirname, 'fixtures/.temp')
   await fs.rm(tempDir, { recursive: true, force: true })
+  await fs.mkdir(tempDir, { recursive: true })
 
   const cwd = options.cwd ?? process.cwd()
   const env = options.env ? { ...process.env, ...options.env } : process.env
