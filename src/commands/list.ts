@@ -2,7 +2,7 @@ import { readdirSync } from 'node:fs'
 import path from 'node:path'
 import pc from 'picocolors'
 import type { GlobalUserConfig } from '../config/config'
-import { icons, highlight, muted } from '../output/format'
+import { icons, highlight, muted, toTildePath, bold, gray } from '../output/format'
 
 export function runListCommand(config: GlobalUserConfig): void {
   const owners = readDirectoryNames(config.root)
@@ -34,16 +34,17 @@ export function runListCommand(config: GlobalUserConfig): void {
     return
   }
 
-  console.log(muted(`in ${highlight(config.root)}:`))
+  const displayRoot = toTildePath(config.root)
+  console.log(`${gray(`Projects in`)} ${highlight(displayRoot)}`)
   console.log()
 
   const ownerEntries = Array.from(ownerEntriesSorted(ownerRepos))
 
   for (const [owner, repos] of ownerEntries) {
-    console.log(`${pc.cyan(owner)}/`)
+    console.log(bold(owner))
 
     for (const repo of repos) {
-      console.log(`  ${muted('─')} ${repo}`)
+      console.log(`${muted(` - `)}${repo}`)
     }
 
     console.log()
@@ -52,7 +53,7 @@ export function runListCommand(config: GlobalUserConfig): void {
   const totalRepos = allRepos.length
   const totalOwners = ownerRepos.size
   console.log(
-    `${muted(`${totalRepos} repositor${totalRepos === 1 ? 'y' : 'ies'} in ${totalOwners} organization${totalOwners === 1 ? '' : 's'}`)}`,
+    `${muted('Found')} ${highlight(totalRepos.toString())} ${muted(`repositor${totalRepos === 1 ? 'y' : 'ies'} in`)} ${highlight(totalOwners.toString())} ${muted(`organization${totalOwners === 1 ? '' : 's'}`)}`,
   )
 }
 

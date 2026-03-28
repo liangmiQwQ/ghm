@@ -1,4 +1,13 @@
 import pc from 'picocolors'
+import os from 'node:os'
+
+export function toTildePath(fullPath: string): string {
+  const home = os.homedir()
+  if (fullPath.startsWith(home)) {
+    return '~' + fullPath.slice(home.length)
+  }
+  return fullPath
+}
 
 export const icons = {
   success: pc.green('✓'),
@@ -59,4 +68,8 @@ export function highlight(path: string): string {
 
 export function muted(text: string): string {
   return pc.dim(text)
+}
+
+export function gray(text: string): string {
+  return pc.gray(text)
 }

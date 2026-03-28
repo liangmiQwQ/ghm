@@ -34,6 +34,7 @@
     "preview": "node bin/cli.mjs",
     "test": "vp run build && vp test run",
     "check": "vp check",
+    "clean": "rm -rf .root/*",
     "prepublishOnly": "vp run build",
     "prepare": "vp config"
   },

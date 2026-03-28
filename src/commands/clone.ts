@@ -4,7 +4,7 @@ import { spawn } from 'node:child_process'
 import pc from 'picocolors'
 import type { GlobalUserConfig } from '../config/config'
 import { error } from '../output/error'
-import { success, muted, highlight, startSpinner, stopSpinner } from '../output/format'
+import { success, muted, highlight, startSpinner, stopSpinner, toTildePath } from '../output/format'
 
 export async function runCloneCommand(repo: string, config: GlobalUserConfig): Promise<void> {
   const parsedRepo = parseRepo(repo)
@@ -12,7 +12,7 @@ export async function runCloneCommand(repo: string, config: GlobalUserConfig): P
   const targetDir = path.join(ownerDir, parsedRepo.name)
 
   if (existsSync(targetDir)) {
-    error(`Repository already exists at ${highlight(targetDir)}`)
+    error(`Repository already exists at ${highlight(toTildePath(targetDir))}`)
   }
 
   mkdirSync(ownerDir, { recursive: true })
@@ -24,7 +24,7 @@ export async function runCloneCommand(repo: string, config: GlobalUserConfig): P
     await runGitClone(cloneUrl, targetDir)
     stopSpinner(spinner)
     success(`Cloned ${pc.bold(`${parsedRepo.owner}/${parsedRepo.name}`)}`)
-    console.log(`  ${muted('→')} ${highlight(targetDir)}`)
+    console.log(`  ${muted('→')} ${highlight(toTildePath(targetDir))}`)
   } catch (err) {
     stopSpinner(spinner)
     if (err instanceof Error) {
