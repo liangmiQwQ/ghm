@@ -26,5 +26,6 @@ export default defineConfig({
   },
   test: {
     exclude: ['.root/**', 'node_modules/**'],
+    fileParallelism: false,
   },
 })

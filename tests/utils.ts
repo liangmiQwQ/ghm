@@ -12,11 +12,13 @@ export const tempDir = path.join(import.meta.dirname, 'fixtures/.temp')
 
 export async function exec(
   args: string[],
-  options: { cwd?: string; env?: NodeJS.ProcessEnv } = {},
+  options: { cwd?: string; env?: NodeJS.ProcessEnv; skipCleanup?: boolean } = {},
 ) {
-  // Clean temp dir
-  await fs.rm(tempDir, { recursive: true, force: true })
-  await fs.mkdir(tempDir, { recursive: true })
+  // Clean temp dir unless skipCleanup is true
+  if (!options.skipCleanup) {
+    await fs.rm(tempDir, { recursive: true, force: true })
+    await fs.mkdir(tempDir, { recursive: true })
+  }
 
   const cwd = options.cwd ?? process.cwd()
   const env = options.env ? { ...process.env, ...options.env } : process.env
@@ -41,15 +43,57 @@ export async function exec(
 export function execWithConfig(
   args: string[],
   configPath: string,
-  options: { cwd?: string; env?: NodeJS.ProcessEnv } = {},
+  options: { cwd?: string; env?: NodeJS.ProcessEnv; skipCleanup?: boolean } = {},
 ) {
   return exec(['--config', configPath, ...args], options)
 }
 
-export function execFixture(name: string, args: string[]) {
+export function execFixture(name: string, args: string[], options: { skipCleanup?: boolean } = {}) {
   const cwd = path.join(import.meta.dirname, 'fixtures', name)
   const configPath = path.join(cwd, 'ghmrc.json')
-  // Prepend fixture dir to PATH to allow mock binaries (e.g., git)
-  const env = { ...process.env, PATH: `${cwd}${path.delimiter}${process.env.PATH}` }
-  return execWithConfig(args, configPath, { cwd, env })
+  return execWithConfig(args, configPath, { cwd, ...options })
+}
+
+// Helper functions for setting up test repositories
+export async function setupTestRepo(
+  baseDir: string,
+  owner: string,
+  repo: string,
+  remoteUrl: string,
+): Promise<void> {
+  const repoPath = path.join(baseDir, owner, repo)
+  await fs.mkdir(repoPath, { recursive: true })
+
+  // Initialize git repo
+  await execGit(['init'], repoPath)
+  await execGit(['remote', 'add', 'origin', remoteUrl], repoPath)
+}
+
+export async function setupNotAGitDir(baseDir: string, owner: string, name: string): Promise<void> {
+  const dirPath = path.join(baseDir, owner, name)
+  await fs.mkdir(dirPath, { recursive: true })
+  // Just create a file, no .git directory
+  await fs.writeFile(path.join(dirPath, 'README.md'), '# Not a repo')
+}
+
+export async function setupNonGitHubRepo(
+  baseDir: string,
+  owner: string,
+  repo: string,
+): Promise<void> {
+  const repoPath = path.join(baseDir, owner, repo)
+  await fs.mkdir(repoPath, { recursive: true })
+
+  await execGit(['init'], repoPath)
+  await execGit(['remote', 'add', 'origin', 'https://gitlab.com/user/repo.git'], repoPath)
+}
+
+async function execGit(args: string[], cwd: string): Promise<void> {
+  const result = await x('git', args, {
+    throwOnError: false,
+    nodeOptions: { cwd },
+  })
+  if (result.exitCode !== 0) {
+    throw new Error(`git ${args.join(' ')} failed: ${result.stderr}`)
+  }
 }

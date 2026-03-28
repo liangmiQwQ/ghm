@@ -1,7 +1,38 @@
-import { describe, expect, test } from 'vitest'
-import { execFixture } from '../utils'
+import { describe, expect, test, beforeEach, afterEach } from 'vitest'
+import path from 'node:path'
+import fs from 'node:fs/promises'
+import { execFixture, setupTestRepo, setupNotAGitDir, setupNonGitHubRepo } from '../utils'
+
+const fixtureDir = path.join(import.meta.dirname, '../fixtures/list-command')
+const rootDir = path.join(fixtureDir, 'root')
 
 describe('ghm list', () => {
+  beforeEach(async () => {
+    // Clean up and create fresh root directory
+    await fs.rm(rootDir, { recursive: true, force: true })
+    await fs.mkdir(rootDir, { recursive: true })
+
+    // Set up test repositories
+    // vitejs/vite - GitHub repo
+    await setupTestRepo(rootDir, 'vitejs', 'vite', 'https://github.com/vitejs/vite.git')
+
+    // vuejs/core - GitHub repo
+    await setupTestRepo(rootDir, 'vuejs', 'core', 'https://github.com/vuejs/core.git')
+
+    // vuejs/router - GitHub repo
+    await setupTestRepo(rootDir, 'vuejs', 'router', 'https://github.com/vuejs/router.git')
+
+    // vitejs/no-github-remote - Non-GitHub repo (should be filtered out)
+    await setupNonGitHubRepo(rootDir, 'vitejs', 'no-github-remote')
+
+    // vitejs/not-a-repo - Not a git directory (should be filtered out)
+    await setupNotAGitDir(rootDir, 'vitejs', 'not-a-repo')
+  })
+
+  afterEach(async () => {
+    await fs.rm(rootDir, { recursive: true, force: true })
+  })
+
   test('lists all repositories in root directory', async () => {
     const result = await execFixture('list-command', ['list'])
 
