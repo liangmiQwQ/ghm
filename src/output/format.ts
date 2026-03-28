@@ -13,9 +13,6 @@ export const icons = {
   success: pc.green('✓'),
   error: pc.red('✗'),
   warning: pc.yellow('⚠'),
-  info: pc.cyan('ℹ'),
-  arrow: pc.dim('→'),
-  bullet: pc.dim('•'),
 }
 
 const spinnerFrames = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏']
@@ -43,14 +40,6 @@ export function stopSpinner(spinner: Spinner): void {
 
 export function success(message: string): void {
   console.log(`${icons.success} ${pc.green(message)}`)
-}
-
-export function info(message: string): void {
-  console.log(`${icons.info} ${pc.cyan(message)}`)
-}
-
-export function dim(message: string): void {
-  console.log(pc.dim(message))
 }
 
 export function bold(message: string): string {

@@ -27,11 +27,8 @@ export async function runCloneCommand(repo: string, config: GlobalUserConfig): P
     console.log(`  ${muted('→')} ${highlight(toTildePath(targetDir))}`)
   } catch (err) {
     stopSpinner(spinner)
-    if (err instanceof Error) {
-      error(`Git clone failed for ${parsedRepo.owner}/${parsedRepo.name}: ${err.message}`)
-    } else {
-      error(`Git clone failed for ${parsedRepo.owner}/${parsedRepo.name}`)
-    }
+    const details = err instanceof Error ? `: ${err.message}` : ''
+    error(`Git clone failed for ${parsedRepo.owner}/${parsedRepo.name}${details}`)
   }
 }
 

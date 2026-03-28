@@ -9,14 +9,12 @@ export function runListCommand(config: GlobalUserConfig): void {
   const owners = readDirectoryNames(config.root)
 
   if (!owners.length) {
-    console.log(
-      `${icons.warning} ${pc.yellow(`No repositories found under ${highlight(config.root)}`)}`,
-    )
+    printNoRepositoriesFound(config.root)
     return
   }
 
-  const allRepos: string[] = []
   const ownerRepos = new Map<string, string[]>()
+  let totalRepos = 0
 
   for (const owner of owners) {
     const ownerPath = path.join(config.root, owner)
@@ -32,14 +30,12 @@ export function runListCommand(config: GlobalUserConfig): void {
 
     if (validRepos.length) {
       ownerRepos.set(owner, validRepos)
-      validRepos.forEach((repo) => allRepos.push(`${owner}/${repo}`))
+      totalRepos += validRepos.length
     }
   }
 
-  if (!allRepos.length) {
-    console.log(
-      `${icons.warning} ${pc.yellow(`No repositories found under ${highlight(config.root)}`)}`,
-    )
+  if (!totalRepos) {
+    printNoRepositoriesFound(config.root)
     return
   }
 
@@ -59,11 +55,14 @@ export function runListCommand(config: GlobalUserConfig): void {
     console.log()
   }
 
-  const totalRepos = allRepos.length
   const totalOwners = ownerRepos.size
   console.log(
     `${muted('Found')} ${highlight(totalRepos.toString())} ${muted(`repositor${totalRepos === 1 ? 'y' : 'ies'} in`)} ${highlight(totalOwners.toString())} ${muted(`organization${totalOwners === 1 ? '' : 's'}`)}`,
   )
+}
+
+function printNoRepositoriesFound(root: string): void {
+  console.log(`${icons.warning} ${pc.yellow(`No repositories found under ${highlight(root)}`)}`)
 }
 
 function* ownerEntriesSorted(map: Map<string, string[]>): Generator<[string, string[]]> {
