@@ -44,12 +44,18 @@ cli
     }),
   )
 
-cli.command('shell <shell>', 'Generate shell integration code').action((shell: string) => {
-  if (!isValidShell(shell)) {
-    error(`Invalid shell "${shell}". Supported: bash, zsh, fish`)
-  }
-  console.log(generateShellIntegration(shell, binName))
-})
+cli.command('shell <shell>', 'Generate shell integration code').action(
+  withConfig((config, shell: string) => {
+    // Gateway: prevent duplicate loading via shellrc
+    if (process.env.GHM_SHELL_LOADED) {
+      process.exit(2)
+    }
+    if (!isValidShell(shell)) {
+      error(`Invalid shell "${shell}". Supported: bash, zsh, fish`)
+    }
+    console.log(generateShellIntegration(shell, binName))
+  }),
+)
 
 cli.help()
 cli.version(version || '0.0.0')

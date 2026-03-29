@@ -19,6 +19,8 @@ function generateBashZshIntegration(binName: string): string {
 # source <(${binName} shell bash)  # for bash
 # source <(${binName} shell zsh)   # for zsh
 
+export GHM_SHELL_LOADED=1
+
 echo "hello world from ghm"
 `
 }
@@ -27,6 +29,8 @@ function generateFishIntegration(binName: string): string {
   return `# ghm shell integration
 # Add this to your config.fish:
 # ${binName} shell fish | source
+
+set -gx GHM_SHELL_LOADED 1
 
 echo "hello world from ghm"
 `
