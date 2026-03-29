@@ -50,8 +50,8 @@ cli.command('shell <shell>', 'Generate shell integration code').action(
     if (process.env.GHM_SHELL_LOADED) {
       process.exit(2)
     }
-    if (!isValidShell(shell)) {
-      error(`Invalid shell "${shell}". Supported: bash, zsh, fish`)
+    if (!isValidShell(shell) || !config.shells.includes(shell)) {
+      error(`Invalid shell "${shell}". Supported: ${config.shells.join(', ')}`)
     }
     console.log(generateShellIntegration(shell, binName))
   }),

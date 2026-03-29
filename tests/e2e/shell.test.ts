@@ -30,7 +30,9 @@ describe('ghm shell command', () => {
     const result = await execFixture('shell-cmd', ['shell', 'invalid'])
     expect(result.exitCode).toBe(1)
     expect(stripAnsi(result.stderr)).toContain('Invalid shell')
-    expect(stripAnsi(result.stderr)).toContain('bash, zsh, fish')
+    expect(stripAnsi(result.stderr)).toContain('bash')
+    expect(stripAnsi(result.stderr)).toContain('zsh')
+    expect(stripAnsi(result.stderr)).toContain('fish')
   })
 
   test('exits with code 2 when GHM_SHELL_LOADED is set', async () => {
