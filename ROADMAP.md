@@ -53,12 +53,23 @@ Add a `ghm setup` command, to setup the settings and environment needed.
 
 Add a prompt to ask whether user want to initial the tool first if users try run commands before setup.
 
-Include:
+1. Check `git` command status
+2. Check `gh` command status (include auth)
+3. Ask user's code directory
+4. Ask whether to add even more simple alias for `ghm` command, let user to decide what alias to add but give suggestions (`i` for `ghm`, `k` for `ghm clone`, `li` for `ghm list`).
 
-- Check `git` command status
-- Check `gh` command status (include auth)
-- Ask user's code directory
-- Ask whether to add even more simple alias for `ghm` command, let user to decide what alias to add but give suggestions (`i` for `ghm`, `k` for `ghm clone`, `li` for `ghm list`).
+The config file should be like:
+
+```json
+{
+  "root": "~/code",
+  "shells": ["zsh"],
+  "alias": {
+    "clone": ["k"],
+    "list": ["li"]
+  }
+}
+```
 
 ### - [ ] `ghm` main command
 

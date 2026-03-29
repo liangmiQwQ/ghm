@@ -1,6 +1,9 @@
 # `ghm`
 
-`ghm`, the *G*it*H*ub Project *M*anager for opensource.
+`ghm`, the *G*it*H*ub Project *M*anager for opensource developers.
+
+> [!WARNING]
+> This project is Unix-like (Mac / Linux) only for now.
 
 ```
 npm i -g @liangmi/ghm
@@ -14,11 +17,13 @@ Create `~/.config/ghmrc.json`:
 
 ```json
 {
-  "root": "~/code"
+  "root": "~/code",
+  "shells": ["zsh"]
 }
 ```
 
 `root` must exist and be a directory.
+`shells` is required and must include at least one of `zsh`, `bash`, and `fish`.
 
 ### Commands
 

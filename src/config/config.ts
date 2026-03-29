@@ -7,10 +7,14 @@ import { parse } from 'jsonc-parser'
 
 import { error } from '../output/error'
 
+export const supportedShells = ['zsh', 'bash', 'fish'] as const
+export type SupportedShell = (typeof supportedShells)[number]
+
 export type GlobalUserConfig = {
   root: string
   // For the future use
   editor?: string
+  shells: SupportedShell[]
 }
 
 export function getDefaultConfigPath(): string {
@@ -43,6 +47,8 @@ function parseConfig(jsonc: string, configFilePath: string): GlobalUserConfig {
     invalidConfigError('Config must be an object')
   }
 
+  const shells = parseShells(config.shells, invalidConfigError)
+
   const root = config.root
   if (typeof root !== 'string' || !root) {
     invalidConfigError('"root" must be a non-empty string')
@@ -61,5 +67,46 @@ function parseConfig(jsonc: string, configFilePath: string): GlobalUserConfig {
   return {
     root: rootPath,
     ...(config.editor ? { editor: String(config.editor) } : {}),
+    shells,
   }
+}
+
+function parseShells(
+  value: unknown,
+  invalidConfigError: (message: string) => never,
+): SupportedShell[] {
+  if (value == null) {
+    invalidConfigError('"shells" must be provided with at least one shell')
+  }
+
+  if (!Array.isArray(value)) {
+    invalidConfigError('"shells" must be an array')
+  }
+
+  const normalized = new Set<SupportedShell>()
+
+  for (const shell of value) {
+    if (typeof shell !== 'string') {
+      invalidConfigError('"shells" must contain strings only')
+    }
+
+    const normalizedShell = shell.trim().toLowerCase()
+    if (!normalizedShell) {
+      continue
+    }
+
+    if (!supportedShells.includes(normalizedShell as SupportedShell)) {
+      invalidConfigError(
+        `"shells" contains unsupported shell "${shell}". Supported: ${supportedShells.join(', ')}`,
+      )
+    }
+
+    normalized.add(normalizedShell as SupportedShell)
+  }
+
+  if (!normalized.size) {
+    invalidConfigError('"shells" must contain at least one shell')
+  }
+
+  return [...normalized]
 }
