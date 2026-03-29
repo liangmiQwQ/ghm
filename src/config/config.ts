@@ -47,6 +47,8 @@ function parseConfig(jsonc: string, configFilePath: string): GlobalUserConfig {
     invalidConfigError('Config must be an object')
   }
 
+  const shells = parseShells(config.shells, invalidConfigError)
+
   const root = config.root
   if (typeof root !== 'string' || !root) {
     invalidConfigError('"root" must be a non-empty string')
@@ -61,8 +63,6 @@ function parseConfig(jsonc: string, configFilePath: string): GlobalUserConfig {
   if (!statSync(rootPath).isDirectory()) {
     invalidConfigError(`"root" path is not a directory`)
   }
-
-  const shells = parseShells(config.shells, invalidConfigError)
 
   return {
     root: rootPath,
