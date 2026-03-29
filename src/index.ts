@@ -1,13 +1,15 @@
 import { cac } from 'cac'
-import { version } from '../package.json'
+import { version, bin } from '../package.json'
 import { loadConfig } from './config/config'
 import { runCloneCommand } from './commands/clone'
 import { runListCommand } from './commands/list'
+import { generateShellIntegration, isValidShell } from './commands/shell'
 import { error } from './output/error'
 import { syncManagedShellrc } from './shell/shellrc'
 import type { GlobalUserConfig } from './config/config'
 
-const cli = cac('ghm')
+const binName = Object.keys(bin)[0]
+const cli = cac(binName)
 
 type GlobalOptions = { config?: string }
 
@@ -42,6 +44,13 @@ cli
     }),
   )
 
+cli.command('shell <shell>', 'Generate shell integration code').action((shell: string) => {
+  if (!isValidShell(shell)) {
+    error(`Invalid shell "${shell}". Supported: bash, zsh, fish`)
+  }
+  console.log(generateShellIntegration(shell, binName))
+})
+
 cli.help()
 cli.version(version || '0.0.0')
 
@@ -54,7 +63,7 @@ try {
 
 async function syncShellrcForRun(config: ReturnType<typeof loadConfig>): Promise<void> {
   try {
-    await syncManagedShellrc(config.shells)
+    await syncManagedShellrc(config.shells, binName)
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err)
     error(`Failed to sync shellrc: ${message}`)
