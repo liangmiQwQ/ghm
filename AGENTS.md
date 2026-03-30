@@ -27,15 +27,15 @@ If users run config-required commands without default config and without `--conf
 
 Vite+ is used as the project manager. Use `vp install` to install dependencies, use `vp install -D` if the adden dependency can be bundled. Use `vp run` command to run commands in `package.json`. Do not use `pnpm` or `npm` directly.
 
-Update tests or add new tests after you add a new feature or fix a bug if possible.
+Run `vp check` (lint and format) after you make changes.
 
-Run `vp run test` and `vp check` (lint and format) after you make changes.
+Tests are disabled for now.
 
 Keep AGENTS.md updated with the project codebase. Consider if there is need to modify AGENTS.md after your changes. Don't store meaningless things like project structure or project status in AGENTS.md.
 
 Never use emoji no matter where.
 
-Keep code functional. Never use classes. Write simple code and make function reusable if possible. Use Unix philosophy to design your code (Every function should only do one thing and should not be too long or complex). Don't make too complex tests.
+Keep code functional. Never use classes. Write simple code and make function reusable if possible. Use Unix philosophy to design your code (Every function should only do one thing and should not be too long or complex).
 
 The project is designed for opensource developers on GitHub, consider about it if you need to make any decision. Do not import features out of its scope.
 
