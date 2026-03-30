@@ -1,15 +1,25 @@
-import type { SupportedShell } from '../utils/config'
+import type { GlobalUserConfig, SupportedShell } from '../utils/config'
 import { supportedShells } from '../utils/config'
+import { error } from '../utils/error'
 
-export function generateShellIntegration(shell: SupportedShell, binName: string): string {
-  switch (shell) {
-    case 'bash':
-    case 'zsh':
-      return generateBashZshIntegration(binName)
-    case 'fish':
-      return generateFishIntegration(binName)
-    default:
-      return ''
+export function generateShellIntegration(
+  shell: string,
+  binName: string,
+  config: GlobalUserConfig,
+): string {
+  if (!isValidShell(shell)) {
+    error(`Invalid shell "${shell}". Supported: ${supportedShells.join(', ')}`)
+  }
+  if (!config.shells.includes(shell)) {
+    error(
+      `Shell "${shell}" is not enabled in config "shells". Enabled: ${config.shells.join(', ')}`,
+    )
+  }
+
+  if (shell === 'bash' || shell === 'zsh') {
+    return generateBashZshIntegration(binName)
+  } else {
+    return generateFishIntegration(binName)
   }
 }
 
@@ -18,10 +28,6 @@ function generateBashZshIntegration(binName: string): string {
 # Add this to your .bashrc or .zshrc:
 # source <(${binName} shell bash)  # for bash
 # source <(${binName} shell zsh)   # for zsh
-
-export GHM_SHELL_LOADED=1
-
-echo "hello world from ghm"
 `
 }
 
@@ -29,10 +35,6 @@ function generateFishIntegration(binName: string): string {
   return `# ghm shell integration
 # Add this to your config.fish:
 # ${binName} shell fish | source
-
-set -gx GHM_SHELL_LOADED 1
-
-echo "hello world from ghm"
 `
 }
 

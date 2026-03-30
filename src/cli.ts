@@ -1,18 +1,17 @@
 import { existsSync } from 'node:fs'
 import { cac } from 'cac'
-import { version, bin } from '../package.json'
-import { getDefaultConfigPath, loadConfig, supportedShells } from './utils/config'
+import { version } from '../package.json'
+import { getDefaultConfigPath, loadConfig } from './utils/config'
 import { runCloneCommand } from './commands/clone'
 import { runListCommand } from './commands/list'
 import { promptRunSetupOnMissingConfig, runSetupCommand } from './commands/setup'
-import { generateShellIntegration, isValidShell } from './commands/shell'
+import { generateShellIntegration } from './commands/shell'
 import { error } from './utils/error'
 import { syncManagedShellrc } from './utils/shellrc'
 import type { GlobalUserConfig } from './utils/config'
-import { preventRunning } from './utils/hooks'
+import { innerBinName, preventRunning, userBinName } from './utils/runner'
 
-const binName = Object.keys(bin)[0]
-const cli = cac(binName)
+const cli = cac(userBinName)
 
 await preventRunning()
 
@@ -30,7 +29,7 @@ function withConfig<T extends any[]>(
       await promptRunSetupOnMissingConfig(() =>
         runSetupCommand({
           configPath,
-          binName,
+          binName: innerBinName,
         }),
       )
       return
@@ -50,45 +49,27 @@ cli
     const options = getGlobalOptions(args)
     await runSetupCommand({
       configPath: options.config,
-      binName,
+      binName: innerBinName,
     })
   })
 
 cli
   .command('clone <repo>', 'Clone a repository to <root>/<owner>/<repo>')
   .alias('c')
-  .action(
-    withConfig(async (config, repo: string) => {
-      await runCloneCommand(repo, config)
-    }),
-  )
+  .action(withConfig(async (config, repo: string) => await runCloneCommand(repo, config)))
 
 cli
   .command('list', 'List repositories under configured root')
   .alias('ls')
-  .action(
-    withConfig(async (config) => {
-      await runListCommand(config)
-    }),
-  )
+  .action(withConfig(async (config) => await runListCommand(config)))
 
-cli.command('shell <shell>', 'Generate shell integration code').action(
-  withConfig((config, shell: string) => {
-    // Gateway: prevent duplicate loading via shellrc
-    if (process.env.GHM_SHELL_LOADED) {
-      process.exit(2)
-    }
-    if (!isValidShell(shell)) {
-      error(`Invalid shell "${shell}". Supported: ${supportedShells.join(', ')}`)
-    }
-    if (!config.shells.includes(shell)) {
-      error(
-        `Shell "${shell}" is not enabled in config "shells". Enabled: ${config.shells.join(', ')}`,
-      )
-    }
-    console.log(generateShellIntegration(shell, binName))
-  }),
-)
+cli
+  .command('shell <shell>', 'Generate shell integration code')
+  .action(
+    withConfig((config, shell: string) =>
+      console.log(generateShellIntegration(shell, innerBinName, config)),
+    ),
+  )
 
 cli.help()
 cli.version(version || '0.0.0')
@@ -102,7 +83,7 @@ try {
 
 async function syncShellrcForRun(config: ReturnType<typeof loadConfig>): Promise<void> {
   try {
-    await syncManagedShellrc(config.shells, binName)
+    await syncManagedShellrc(config.shells, innerBinName)
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err)
     error(`Failed to sync shellrc: ${message}`)
