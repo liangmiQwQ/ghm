@@ -18,6 +18,7 @@
   "files": [
     "dist",
     "bin",
+    "scripts",
     "config_schema.json"
   ],
   "type": "module",
@@ -35,7 +36,8 @@
     "check": "vp check",
     "clean": "rm -rf .root/*",
     "prepublishOnly": "vp run build",
-    "prepare": "vp config"
+    "prepare": "vp config",
+    "preinstall": "node scripts/preinstall.mjs"
   },
   "dependencies": {
     "jsonc-parser": "^3.3.1"
