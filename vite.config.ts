@@ -8,7 +8,7 @@ export default defineConfig({
     fixedExtension: true,
     platform: 'node',
     entry: {
-      index: 'src/index.ts',
+      cli: 'src/cli.ts',
     },
     dts: false,
     exports: false,
