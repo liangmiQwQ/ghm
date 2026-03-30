@@ -37,7 +37,8 @@
     "clean": "rm -rf .root/*",
     "prepublishOnly": "vp run build",
     "prepare": "vp config",
-    "preinstall": "node scripts/preinstall.mjs"
+    "preinstall": "node scripts/preinstall.mjs",
+    "release": "bumpp"
   },
   "dependencies": {
     "jsonc-parser": "^3.3.1"
