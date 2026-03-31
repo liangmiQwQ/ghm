@@ -43,9 +43,10 @@ export async function runListCommand(config: GlobalUserConfig): Promise<void> {
   console.log(`${pc.gray(`Projects in`)} ${pc.cyan(displayRoot)}`)
   console.log()
 
-  const ownerEntries = Array.from(ownerEntriesSorted(ownerRepos))
+  const ownerEntries = Array.from(ownerRepos.entries()).sort(([a], [b]) => a.localeCompare(b))
 
   for (const [owner, repos] of ownerEntries) {
+    repos.sort()
     console.log(`${pc.bold(owner)} ${pc.dim(`(${repos.length})`)}`)
 
     for (const repo of repos) {
@@ -63,13 +64,6 @@ export async function runListCommand(config: GlobalUserConfig): Promise<void> {
 
 function printNoRepositoriesFound(root: string): void {
   console.log(`${icons.warning} ${pc.yellow(`No repositories found under ${pc.cyan(root)}`)}`)
-}
-
-function* ownerEntriesSorted(map: Map<string, string[]>): Generator<[string, string[]]> {
-  const sorted = Array.from(map.entries()).sort(([a], [b]) => a.localeCompare(b))
-  for (const entry of sorted) {
-    yield [entry[0], entry[1].sort()]
-  }
 }
 
 function readDirectoryNames(dir: string): string[] {

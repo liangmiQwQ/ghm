@@ -29,6 +29,6 @@ function generateFishIntegration(): string {
 `
 }
 
-export function isValidShell(shell: string): shell is SupportedShell {
+function isValidShell(shell: string): shell is SupportedShell {
   return supportedShells.includes(shell as SupportedShell)
 }

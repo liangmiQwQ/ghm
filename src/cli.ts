@@ -25,7 +25,7 @@ function withConfig<T extends any[]>(
     const configPath = options.config ? options.config : getDefaultConfigPath()
 
     if (!options.config && !existsSync(configPath)) {
-      await promptRunSetupOnMissingConfig(() => runSetupCommand())
+      await promptRunSetupOnMissingConfig(runSetupCommand)
       return
     }
 
@@ -42,12 +42,12 @@ cli.command('setup', 'Setup config and shell integration for ghm').action(runSet
 cli
   .command('clone <repo>', 'Clone a repository to <root>/<owner>/<repo>')
   .alias('c')
-  .action(withConfig(async (config, repo: string) => await runCloneCommand(repo, config)))
+  .action(withConfig((config, repo: string) => runCloneCommand(repo, config)))
 
 cli
   .command('list', 'List repositories under configured root')
   .alias('ls')
-  .action(withConfig(async (config) => await runListCommand(config)))
+  .action(withConfig(runListCommand))
 
 cli
   .command('shell <shell>', 'Generate shell integration code')
