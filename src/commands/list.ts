@@ -3,7 +3,7 @@ import path from 'node:path'
 import { x } from 'tinyexec'
 import pc from 'picocolors'
 import type { GlobalUserConfig } from '../utils/config'
-import { icons, highlight, muted, toTildePath, bold, gray } from '../utils/format'
+import { icons, toTildePath } from '../utils/format'
 
 export async function runListCommand(config: GlobalUserConfig): Promise<void> {
   const owners = readDirectoryNames(config.root)
@@ -40,16 +40,16 @@ export async function runListCommand(config: GlobalUserConfig): Promise<void> {
   }
 
   const displayRoot = toTildePath(config.root)
-  console.log(`${gray(`Projects in`)} ${highlight(displayRoot)}`)
+  console.log(`${pc.gray(`Projects in`)} ${pc.cyan(displayRoot)}`)
   console.log()
 
   const ownerEntries = Array.from(ownerEntriesSorted(ownerRepos))
 
   for (const [owner, repos] of ownerEntries) {
-    console.log(`${bold(owner)} ${muted(`(${repos.length})`)}`)
+    console.log(`${pc.bold(owner)} ${pc.dim(`(${repos.length})`)}`)
 
     for (const repo of repos) {
-      console.log(`${muted(` - `)}${repo}`)
+      console.log(`${pc.dim(` - `)}${repo}`)
     }
 
     console.log()
@@ -57,12 +57,12 @@ export async function runListCommand(config: GlobalUserConfig): Promise<void> {
 
   const totalOwners = ownerRepos.size
   console.log(
-    `${muted('Found')} ${highlight(totalRepos.toString())} ${muted(`repositor${totalRepos === 1 ? 'y' : 'ies'} in`)} ${highlight(totalOwners.toString())} ${muted(`organization${totalOwners === 1 ? '' : 's'}`)}`,
+    `${pc.dim('Found')} ${pc.cyan(totalRepos.toString())} ${pc.dim(`repositor${totalRepos === 1 ? 'y' : 'ies'} in`)} ${pc.cyan(totalOwners.toString())} ${pc.dim(`organization${totalOwners === 1 ? '' : 's'}`)}`,
   )
 }
 
 function printNoRepositoriesFound(root: string): void {
-  console.log(`${icons.warning} ${pc.yellow(`No repositories found under ${highlight(root)}`)}`)
+  console.log(`${icons.warning} ${pc.yellow(`No repositories found under ${pc.cyan(root)}`)}`)
 }
 
 function* ownerEntriesSorted(map: Map<string, string[]>): Generator<[string, string[]]> {

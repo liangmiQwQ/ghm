@@ -7,7 +7,8 @@ import type { SupportedShell } from '../utils/config'
 import { getDefaultConfigPath, supportedShells } from '../utils/config'
 import { syncShellrc } from '../utils/shellrc'
 import { error } from '../utils/error'
-import { highlight, success, toTildePath } from '../utils/format'
+import pc from 'picocolors'
+import { success, toTildePath } from '../utils/format'
 import { runCommand } from '../utils/commands'
 
 type PromptRunner = typeof prompts
@@ -36,7 +37,7 @@ export async function runSetupCommand(): Promise<void> {
   await writeConfigFile(configPath, rootPath, selectedShells)
   await syncShellrc(selectedShells)
 
-  success(`Setup completed. Config written to ${highlight(toTildePath(configPath))}`)
+  success(`Setup completed. Config written to ${pc.cyan(toTildePath(configPath))}`)
 }
 
 export async function promptRunSetupOnMissingConfig(runSetup: () => Promise<void>): Promise<void> {
