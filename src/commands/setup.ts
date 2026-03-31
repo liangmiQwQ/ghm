@@ -1,7 +1,7 @@
 import { existsSync } from 'node:fs'
 import { mkdir, stat, writeFile } from 'node:fs/promises'
 import path from 'node:path'
-import prompts from '@posva/prompts'
+import prompts from 'prompts'
 import untildify from 'untildify'
 import type { SupportedShell } from '../utils/config'
 import { getDefaultConfigPath, supportedShells } from '../utils/config'
