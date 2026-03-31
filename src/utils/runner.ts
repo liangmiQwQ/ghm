@@ -10,8 +10,12 @@ export async function preventRunning() {
   }
 
   try {
-    await ensureToolReady(innerBinName, ['--version'])
-    await ensureToolReady(userBinName, ['--version'])
+    const hasInner = await ensureToolReady(innerBinName, ['--version'], false)
+    const hasUser = await ensureToolReady(userBinName, ['--version'], false)
+
+    if (!hasInner || !hasUser) {
+      throw new Error() // Trigger catch block
+    }
   } catch {
     error('Local installation is not supported. Please install ghm globally.', 78)
   }

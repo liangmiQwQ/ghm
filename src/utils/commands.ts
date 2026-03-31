@@ -6,15 +6,23 @@ export const runCommand = async (command: string, args: string[]) => {
   return { exitCode: result.exitCode ?? 1 }
 }
 
-export const ensureToolReady = async (command: string, args: string[]) => {
+export const ensureToolReady = async (
+  command: string,
+  args: string[],
+  panic = true,
+): Promise<boolean> => {
   try {
     const result = await runCommand(command, args)
     if (result.exitCode === 0) {
-      return
+      return true
     }
   } catch {
     // fall through to standardized error
   }
 
-  error(`Required tool "${command}" is unavailable.`, 69)
+  if (panic) {
+    error(`Required tool "${command}" is unavailable.`, 69)
+  }
+
+  return false
 }
