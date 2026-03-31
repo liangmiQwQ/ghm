@@ -1,20 +1,21 @@
 import { existsSync } from 'node:fs'
 import { cac } from 'cac'
-import { version, bin } from '../package.json'
-import { getDefaultConfigPath, loadConfig, supportedShells } from './config/config'
+import { version } from '../package.json'
+import { getDefaultConfigPath, loadConfig } from './utils/config'
 import { runCloneCommand } from './commands/clone'
 import { runListCommand } from './commands/list'
 import { promptRunSetupOnMissingConfig, runSetupCommand } from './commands/setup'
-import { generateShellIntegration, isValidShell } from './commands/shell'
-import { error } from './output/error'
-import { syncManagedShellrc } from './shell/shellrc'
-import type { GlobalUserConfig } from './config/config'
+import { generateShellIntegration } from './commands/shell'
+import { error } from './utils/error'
+import { syncShellrc } from './utils/shellrc'
+import type { GlobalUserConfig } from './utils/config'
+import { preventRunning, userBinName } from './utils/runner'
 
-const binName = Object.keys(bin)[0]
-const cli = cac(binName)
+const cli = cac(userBinName)
+
+await preventRunning()
 
 type GlobalOptions = { config?: string }
-type CommandActionArgs = unknown[]
 
 function withConfig<T extends any[]>(
   handler: (config: GlobalUserConfig, ...args: T) => Promise<void> | void,
@@ -24,12 +25,7 @@ function withConfig<T extends any[]>(
     const configPath = options.config ? options.config : getDefaultConfigPath()
 
     if (!options.config && !existsSync(configPath)) {
-      await promptRunSetupOnMissingConfig(() =>
-        runSetupCommand({
-          configPath,
-          binName,
-        }),
-      )
+      await promptRunSetupOnMissingConfig(runSetupCommand)
       return
     }
 
@@ -41,51 +37,23 @@ function withConfig<T extends any[]>(
 
 cli.option('-c, --config <path>', 'Use a custom config file path')
 
-cli
-  .command('setup', 'Setup config and shell integration for ghm')
-  .action(async (...args: CommandActionArgs) => {
-    const options = getGlobalOptions(args)
-    await runSetupCommand({
-      configPath: options.config,
-      binName,
-    })
-  })
+cli.command('setup', 'Setup config and shell integration for ghm').action(runSetupCommand)
 
 cli
   .command('clone <repo>', 'Clone a repository to <root>/<owner>/<repo>')
   .alias('c')
-  .action(
-    withConfig(async (config, repo: string) => {
-      await runCloneCommand(repo, config)
-    }),
-  )
+  .action(withConfig((config, repo: string) => runCloneCommand(repo, config)))
 
 cli
   .command('list', 'List repositories under configured root')
   .alias('ls')
-  .action(
-    withConfig(async (config) => {
-      await runListCommand(config)
-    }),
-  )
+  .action(withConfig(runListCommand))
 
-cli.command('shell <shell>', 'Generate shell integration code').action(
-  withConfig((config, shell: string) => {
-    // Gateway: prevent duplicate loading via shellrc
-    if (process.env.GHM_SHELL_LOADED) {
-      process.exit(2)
-    }
-    if (!isValidShell(shell)) {
-      error(`Invalid shell "${shell}". Supported: ${supportedShells.join(', ')}`)
-    }
-    if (!config.shells.includes(shell)) {
-      error(
-        `Shell "${shell}" is not enabled in config "shells". Enabled: ${config.shells.join(', ')}`,
-      )
-    }
-    console.log(generateShellIntegration(shell, binName))
-  }),
-)
+cli
+  .command('shell <shell>', 'Generate shell integration code')
+  .action(
+    withConfig((config, shell: string) => console.log(generateShellIntegration(shell, config))),
+  )
 
 cli.help()
 cli.version(version || '0.0.0')
@@ -97,16 +65,11 @@ try {
   error(message.charAt(0).toUpperCase() + message.slice(1))
 }
 
-async function syncShellrcForRun(config: ReturnType<typeof loadConfig>): Promise<void> {
+async function syncShellrcForRun(config: GlobalUserConfig): Promise<void> {
   try {
-    await syncManagedShellrc(config.shells, binName)
+    await syncShellrc(config.shells)
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err)
     error(`Failed to sync shellrc: ${message}`)
   }
-}
-
-function getGlobalOptions(args: CommandActionArgs): GlobalOptions {
-  const maybeOptions = args[args.length - 1]
-  return (maybeOptions && typeof maybeOptions === 'object' ? maybeOptions : {}) as GlobalOptions
 }

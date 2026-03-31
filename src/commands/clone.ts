@@ -2,9 +2,9 @@ import { existsSync, mkdirSync } from 'node:fs'
 import path from 'node:path'
 import { x } from 'tinyexec'
 import pc from 'picocolors'
-import type { GlobalUserConfig } from '../config/config'
-import { error } from '../output/error'
-import { success, muted, highlight, startSpinner, stopSpinner, toTildePath } from '../output/format'
+import type { GlobalUserConfig } from '../utils/config'
+import { error } from '../utils/error'
+import { success, startSpinner, stopSpinner, toTildePath } from '../utils/format'
 
 export async function runCloneCommand(repo: string, config: GlobalUserConfig): Promise<void> {
   const parsedRepo = parseRepo(repo)
@@ -12,7 +12,7 @@ export async function runCloneCommand(repo: string, config: GlobalUserConfig): P
   const targetDir = path.join(ownerDir, parsedRepo.name)
 
   if (existsSync(targetDir)) {
-    error(`Repository already exists at ${highlight(toTildePath(targetDir))}`)
+    error(`Repository already exists at ${pc.cyan(toTildePath(targetDir))}`)
   }
 
   mkdirSync(ownerDir, { recursive: true })
@@ -24,7 +24,7 @@ export async function runCloneCommand(repo: string, config: GlobalUserConfig): P
     await runGitClone(cloneUrl, targetDir)
     stopSpinner(spinner)
     success(`Cloned ${pc.bold(`${parsedRepo.owner}/${parsedRepo.name}`)}`)
-    console.log(`  ${muted('→')} ${highlight(toTildePath(targetDir))}`)
+    console.log(`  ${pc.dim('→')} ${pc.cyan(toTildePath(targetDir))}`)
   } catch (err) {
     stopSpinner(spinner)
     const details = err instanceof Error ? `: ${err.message}` : ''

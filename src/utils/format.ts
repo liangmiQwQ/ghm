@@ -41,19 +41,3 @@ export function stopSpinner(spinner: Spinner): void {
 export function success(message: string): void {
   console.log(`${icons.success} ${pc.green(message)}`)
 }
-
-export function bold(message: string): string {
-  return pc.bold(message)
-}
-
-export function highlight(path: string): string {
-  return pc.cyan(path)
-}
-
-export function muted(text: string): string {
-  return pc.dim(text)
-}
-
-export function gray(text: string): string {
-  return pc.gray(text)
-}

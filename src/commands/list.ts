@@ -2,8 +2,8 @@ import { existsSync, readdirSync } from 'node:fs'
 import path from 'node:path'
 import { x } from 'tinyexec'
 import pc from 'picocolors'
-import type { GlobalUserConfig } from '../config/config'
-import { icons, highlight, muted, toTildePath, bold, gray } from '../output/format'
+import type { GlobalUserConfig } from '../utils/config'
+import { icons, toTildePath } from '../utils/format'
 
 export async function runListCommand(config: GlobalUserConfig): Promise<void> {
   const owners = readDirectoryNames(config.root)
@@ -40,16 +40,17 @@ export async function runListCommand(config: GlobalUserConfig): Promise<void> {
   }
 
   const displayRoot = toTildePath(config.root)
-  console.log(`${gray(`Projects in`)} ${highlight(displayRoot)}`)
+  console.log(`${pc.gray(`Projects in`)} ${pc.cyan(displayRoot)}`)
   console.log()
 
-  const ownerEntries = Array.from(ownerEntriesSorted(ownerRepos))
+  const ownerEntries = Array.from(ownerRepos.entries()).sort(([a], [b]) => a.localeCompare(b))
 
   for (const [owner, repos] of ownerEntries) {
-    console.log(`${bold(owner)} ${muted(`(${repos.length})`)}`)
+    repos.sort()
+    console.log(`${pc.bold(owner)} ${pc.dim(`(${repos.length})`)}`)
 
     for (const repo of repos) {
-      console.log(`${muted(` - `)}${repo}`)
+      console.log(`${pc.dim(` - `)}${repo}`)
     }
 
     console.log()
@@ -57,19 +58,12 @@ export async function runListCommand(config: GlobalUserConfig): Promise<void> {
 
   const totalOwners = ownerRepos.size
   console.log(
-    `${muted('Found')} ${highlight(totalRepos.toString())} ${muted(`repositor${totalRepos === 1 ? 'y' : 'ies'} in`)} ${highlight(totalOwners.toString())} ${muted(`organization${totalOwners === 1 ? '' : 's'}`)}`,
+    `${pc.dim('Found')} ${pc.cyan(totalRepos.toString())} ${pc.dim(`reposiItor${totalRepos === 1 ? 'y' : 'ies'} in`)} ${pc.cyan(totalOwners.toString())} ${pc.dim(`organization${totalOwners === 1 ? '' : 's'}`)}`,
   )
 }
 
 function printNoRepositoriesFound(root: string): void {
-  console.log(`${icons.warning} ${pc.yellow(`No repositories found under ${highlight(root)}`)}`)
-}
-
-function* ownerEntriesSorted(map: Map<string, string[]>): Generator<[string, string[]]> {
-  const sorted = Array.from(map.entries()).sort(([a], [b]) => a.localeCompare(b))
-  for (const entry of sorted) {
-    yield [entry[0], entry[1].sort()]
-  }
+  console.log(`${icons.warning} ${pc.yellow(`No repositories found under ${pc.cyan(root)}`)}`)
 }
 
 function readDirectoryNames(dir: string): string[] {
