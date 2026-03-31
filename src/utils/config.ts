@@ -9,12 +9,16 @@ import { error } from './error'
 
 export const supportedShells = ['zsh', 'bash', 'fish'] as const
 export type SupportedShell = (typeof supportedShells)[number]
+export const aliasCommands = ['clone', 'list'] as const
+export type AliasCommand = (typeof aliasCommands)[number]
+export type CommandAliasConfig = Partial<Record<AliasCommand, string[]>>
 
 export type GlobalUserConfig = {
   root: string
   // For the future use
   editor?: string
   shells: SupportedShell[]
+  alias?: CommandAliasConfig
 }
 
 export function getDefaultConfigPath(): string {
@@ -48,6 +52,7 @@ function parseConfig(jsonc: string, configFilePath: string): GlobalUserConfig {
   }
 
   const shells = parseShells(config.shells, invalidConfigError)
+  const alias = parseAliasConfig(config.alias, invalidConfigError)
 
   const root = config.root
   if (typeof root !== 'string' || !root) {
@@ -68,6 +73,7 @@ function parseConfig(jsonc: string, configFilePath: string): GlobalUserConfig {
     root: rootPath,
     ...(config.editor ? { editor: String(config.editor) } : {}),
     shells,
+    ...(alias ? { alias } : {}),
   }
 }
 
@@ -109,4 +115,58 @@ function parseShells(
   }
 
   return [...normalized]
+}
+
+function parseAliasConfig(
+  value: unknown,
+  invalidConfigError: (message: string) => never,
+): CommandAliasConfig | undefined {
+  if (value == null) {
+    return undefined
+  }
+
+  if (typeof value !== 'object' || Array.isArray(value)) {
+    invalidConfigError('"alias" must be an object')
+  }
+
+  const alias = value as Record<string, unknown>
+  const parsed: CommandAliasConfig = {}
+
+  for (const [command, aliases] of Object.entries(alias)) {
+    if (!aliasCommands.includes(command as AliasCommand)) {
+      invalidConfigError(
+        `"alias" contains unsupported command "${command}". Supported: ${aliasCommands.join(', ')}`,
+      )
+    }
+
+    if (!Array.isArray(aliases)) {
+      invalidConfigError(`"alias.${command}" must be an array`)
+    }
+
+    const normalized = new Set<string>()
+    for (const aliasName of aliases) {
+      if (typeof aliasName !== 'string') {
+        invalidConfigError(`"alias.${command}" must contain strings only`)
+      }
+
+      const trimmed = aliasName.trim()
+      if (!trimmed) {
+        continue
+      }
+
+      if (/[\s,]/.test(trimmed)) {
+        invalidConfigError(
+          `"alias.${command}" contains invalid alias "${aliasName}". Aliases cannot include spaces or commas`,
+        )
+      }
+
+      normalized.add(trimmed)
+    }
+
+    if (normalized.size > 0) {
+      parsed[command as AliasCommand] = [...normalized]
+    }
+  }
+
+  return Object.keys(parsed).length > 0 ? parsed : undefined
 }

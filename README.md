@@ -18,12 +18,18 @@ Create `~/.config/ghmrc.json`:
 ```json
 {
   "root": "~/code",
-  "shells": ["zsh"]
+  "shells": ["zsh"],
+  "alias": {
+    "ghm": ["i"],
+    "clone": ["k"],
+    "list": ["li"]
+  }
 }
 ```
 
 `root` must exist and be a directory.
 `shells` is required and must include at least one of `zsh`, `bash`, and `fish`.
+`alias` is optional and supports command aliases for `ghm`, `clone`, and `list`.
 
 ### Commands
 

@@ -3,8 +3,8 @@ import { mkdir, stat, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 import prompts from 'prompts'
 import untildify from 'untildify'
-import type { SupportedShell } from '../utils/config'
-import { getDefaultConfigPath, supportedShells } from '../utils/config'
+import type { AliasCommand, CommandAliasConfig, SupportedShell } from '../utils/config'
+import { aliasCommands, getDefaultConfigPath, supportedShells } from '../utils/config'
 import { syncShellrc } from '../utils/shellrc'
 import { error } from '../utils/error'
 import pc from 'picocolors'
@@ -12,6 +12,10 @@ import { success, toTildePath } from '../utils/format'
 import { runCommand } from '../utils/commands'
 
 const CONFIG_SCHEMA_URL = 'https://raw.githubusercontent.com/liangmiQwQ/ghm/main/config_schema.json'
+const defaultAliases: Record<AliasCommand, string> = {
+  clone: 'k',
+  list: 'li',
+}
 
 export async function runSetupCommand(): Promise<void> {
   const configPath = getDefaultConfigPath()
@@ -30,8 +34,9 @@ export async function runSetupCommand(): Promise<void> {
 
   const selectedShells = await promptShellSelection()
   await ensureShellCommandsAvailable(selectedShells)
+  const aliases = await promptAliasConfig()
 
-  await writeConfigFile(configPath, rootPath, selectedShells)
+  await writeConfigFile(configPath, rootPath, selectedShells, aliases)
   await syncShellrc(selectedShells)
 
   success(`Setup completed. Config written to ${pc.cyan(toTildePath(configPath))}`)
@@ -145,18 +150,66 @@ async function writeConfigFile(
   configPath: string,
   rootPath: string,
   shells: SupportedShell[],
+  alias?: CommandAliasConfig,
 ): Promise<void> {
   const content = `${JSON.stringify(
     {
       $schema: CONFIG_SCHEMA_URL,
       root: rootPath,
       shells,
+      ...(alias ? { alias } : {}),
     },
     null,
     2,
   )}\n`
   await mkdir(path.dirname(configPath), { recursive: true })
   await writeFile(configPath, content, 'utf8')
+}
+
+async function promptAliasConfig(): Promise<CommandAliasConfig | undefined> {
+  const withAlias = await promptConfirm('Would you like to add alias for ghm use?', 'withAlias')
+  if (!withAlias) {
+    return undefined
+  }
+
+  const aliases: CommandAliasConfig = {}
+  for (const command of aliasCommands) {
+    const suggested = defaultAliases[command]
+    const commandLabel = `ghm ${command}`
+    const input = await promptText(
+      `Which alias would you like to use for "${commandLabel}"? Suggested: ${suggested}. Use "," to separate multiple aliases, leave blank for none.`,
+      `alias_${command}`,
+    )
+    const parsed = parseAliasInput(input)
+    if (parsed.length > 0) {
+      aliases[command] = parsed
+    }
+  }
+
+  return Object.keys(aliases).length > 0 ? aliases : undefined
+}
+
+function parseAliasInput(input: string): string[] {
+  const trimmed = input.trim()
+  if (!trimmed) {
+    return []
+  }
+
+  const parsed = new Set<string>()
+  for (const alias of trimmed.split(',')) {
+    const value = alias.trim()
+    if (!value) {
+      continue
+    }
+
+    if (/[\s,]/.test(value)) {
+      error(`Invalid alias "${value}". Aliases cannot include spaces or commas.`, 78)
+    }
+
+    parsed.add(value)
+  }
+
+  return [...parsed]
 }
 
 async function promptText(message: string, name: string): Promise<string> {

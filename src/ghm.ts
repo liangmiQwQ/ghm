@@ -11,7 +11,6 @@ import type { GlobalUserConfig } from './utils/config'
 import { preventRunning, userBinName } from './utils/runner'
 
 const cli = cac(userBinName)
-
 await preventRunning()
 
 type GlobalOptions = { config?: string }
