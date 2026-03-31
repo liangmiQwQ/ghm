@@ -2,89 +2,47 @@ import { existsSync } from 'node:fs'
 import { mkdir, stat, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 import prompts from '@posva/prompts'
-import { x } from 'tinyexec'
 import untildify from 'untildify'
 import type { SupportedShell } from '../utils/config'
 import { getDefaultConfigPath, supportedShells } from '../utils/config'
+import { syncShellrc } from '../utils/shellrc'
 import { error } from '../utils/error'
 import { highlight, success, toTildePath } from '../utils/format'
-import { syncManagedShellrc } from '../utils/shellrc'
+import { runCommand } from '../utils/commands'
 
-type PromptQuestion = {
-  type: string
-  name: string
-  message: string
-  initial?: boolean
-  choices?: Array<{ title: string; value: string }>
-}
-
-type PromptRunner = (
-  question: PromptQuestion | PromptQuestion[],
-  options?: { onCancel?: () => boolean | void },
-) => Promise<Record<string, unknown>>
-
-type CommandRunner = (command: string, args: string[]) => Promise<{ exitCode: number }>
-
-type SetupDeps = {
-  prompt: PromptRunner
-  runCommand: CommandRunner
-  syncShellrc: (shells: SupportedShell[], binName: string) => Promise<void>
-}
+type PromptRunner = typeof prompts
 
 const CONFIG_SCHEMA_URL = 'https://raw.githubusercontent.com/liangmiQwQ/ghm/main/config_schema.json'
 
-const defaultDeps: SetupDeps = {
-  prompt: prompts as PromptRunner,
-  runCommand: async (command, args) => {
-    const result = await x(command, args, { throwOnError: false })
-    return { exitCode: result.exitCode ?? 1 }
-  },
-  syncShellrc: syncManagedShellrc,
-}
-
-export type SetupCommandOptions = {
-  configPath?: string
-  binName: string
-}
-
-export async function runSetupCommand(
-  options: SetupCommandOptions,
-  deps: Partial<SetupDeps> = {},
-): Promise<void> {
-  const allDeps = { ...defaultDeps, ...deps }
-  const configPath = resolveConfigPath(options.configPath)
-
+export async function runSetupCommand(): Promise<void> {
+  const configPath = getDefaultConfigPath()
   if (existsSync(configPath)) {
     error(`Config file already exists at ${toTildePath(configPath)}.`, 78)
   }
 
-  await ensureToolReady('git', ['--version'], allDeps.runCommand)
-  await ensureGhAuthenticated(allDeps.runCommand)
+  await ensureToolReady('git', ['--version'])
+  await ensureGhAuthenticated()
 
   const rootInput = await promptText(
-    allDeps.prompt,
+    prompts,
     'What directory would you like to store all your projects?',
     'root',
   )
   const rootPath = await resolveAndValidateRootPath(rootInput)
 
-  const selectedShells = await promptShellSelection(allDeps.prompt)
-  await ensureShellCommandsAvailable(selectedShells, allDeps.runCommand)
+  const selectedShells = await promptShellSelection(prompts)
+  await ensureShellCommandsAvailable(selectedShells)
 
   await writeConfigFile(configPath, rootPath, selectedShells)
-  await allDeps.syncShellrc(selectedShells, options.binName)
+  await syncShellrc(selectedShells)
 
   success(`Setup completed. Config written to ${highlight(toTildePath(configPath))}`)
 }
 
-export async function promptRunSetupOnMissingConfig(
-  runSetup: () => Promise<void>,
-  deps: Partial<Pick<SetupDeps, 'prompt'>> = {},
-): Promise<void> {
-  const prompt = deps.prompt ?? defaultDeps.prompt
+export async function promptRunSetupOnMissingConfig(runSetup: () => Promise<void>): Promise<void> {
   const confirmed = await promptConfirm(
-    prompt,
-    'No config found, would you like to run `ghm setup` first? (Y / N)',
+    prompts,
+    'No config found, would you like to run `ghm setup` first?',
     'runSetup',
   )
 
@@ -96,18 +54,7 @@ export async function promptRunSetupOnMissingConfig(
   error('No config found. Setup is required before running this command.', 78)
 }
 
-function resolveConfigPath(configPath?: string): string {
-  if (!configPath) {
-    return getDefaultConfigPath()
-  }
-  return path.resolve(configPath)
-}
-
-async function ensureToolReady(
-  command: string,
-  args: string[],
-  runCommand: CommandRunner,
-): Promise<void> {
+async function ensureToolReady(command: string, args: string[]): Promise<void> {
   try {
     const result = await runCommand(command, args)
     if (result.exitCode === 0) {
@@ -120,7 +67,7 @@ async function ensureToolReady(
   error(`Required tool "${command}" is unavailable.`, 69)
 }
 
-async function ensureGhAuthenticated(runCommand: CommandRunner): Promise<void> {
+async function ensureGhAuthenticated(): Promise<void> {
   try {
     const result = await runCommand('gh', ['auth', 'status'])
     if (result.exitCode === 0) {
@@ -191,12 +138,9 @@ async function promptShellSelection(prompt: PromptRunner): Promise<SupportedShel
   return selected
 }
 
-async function ensureShellCommandsAvailable(
-  shells: SupportedShell[],
-  runCommand: CommandRunner,
-): Promise<void> {
+async function ensureShellCommandsAvailable(shells: SupportedShell[]): Promise<void> {
   for (const shell of shells) {
-    await ensureToolReady(shell, ['--version'], runCommand)
+    await ensureToolReady(shell, ['--version'])
   }
 }
 

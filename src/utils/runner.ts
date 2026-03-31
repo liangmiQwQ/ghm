@@ -1,5 +1,5 @@
+import { ensureToolReady } from './commands'
 import { error } from './error'
-import which from 'which'
 
 export const userBinName = 'ghm'
 export const innerBinName = 'ghmi'
@@ -9,7 +9,10 @@ export async function preventRunning() {
     error('Windows is not supported. ghm currently supports macOS and Linux only.', 69)
   }
 
-  if ((await which(innerBinName, { nothrow: true })) === null) {
+  try {
+    await ensureToolReady(innerBinName, ['--version'])
+    await ensureToolReady(userBinName, ['--version'])
+  } catch {
     error('Local installation is not supported. Please install ghm globally.', 78)
   }
 }

@@ -7,16 +7,15 @@ import { runListCommand } from './commands/list'
 import { promptRunSetupOnMissingConfig, runSetupCommand } from './commands/setup'
 import { generateShellIntegration } from './commands/shell'
 import { error } from './utils/error'
-import { syncManagedShellrc } from './utils/shellrc'
+import { syncShellrc } from './utils/shellrc'
 import type { GlobalUserConfig } from './utils/config'
-import { innerBinName, preventRunning, userBinName } from './utils/runner'
+import { preventRunning, userBinName } from './utils/runner'
 
 const cli = cac(userBinName)
 
 await preventRunning()
 
 type GlobalOptions = { config?: string }
-type CommandActionArgs = unknown[]
 
 function withConfig<T extends any[]>(
   handler: (config: GlobalUserConfig, ...args: T) => Promise<void> | void,
@@ -26,12 +25,7 @@ function withConfig<T extends any[]>(
     const configPath = options.config ? options.config : getDefaultConfigPath()
 
     if (!options.config && !existsSync(configPath)) {
-      await promptRunSetupOnMissingConfig(() =>
-        runSetupCommand({
-          configPath,
-          binName: innerBinName,
-        }),
-      )
+      await promptRunSetupOnMissingConfig(() => runSetupCommand())
       return
     }
 
@@ -43,15 +37,7 @@ function withConfig<T extends any[]>(
 
 cli.option('-c, --config <path>', 'Use a custom config file path')
 
-cli
-  .command('setup', 'Setup config and shell integration for ghm')
-  .action(async (...args: CommandActionArgs) => {
-    const options = getGlobalOptions(args)
-    await runSetupCommand({
-      configPath: options.config,
-      binName: innerBinName,
-    })
-  })
+cli.command('setup', 'Setup config and shell integration for ghm').action(runSetupCommand)
 
 cli
   .command('clone <repo>', 'Clone a repository to <root>/<owner>/<repo>')
@@ -66,9 +52,7 @@ cli
 cli
   .command('shell <shell>', 'Generate shell integration code')
   .action(
-    withConfig((config, shell: string) =>
-      console.log(generateShellIntegration(shell, innerBinName, config)),
-    ),
+    withConfig((config, shell: string) => console.log(generateShellIntegration(shell, config))),
   )
 
 cli.help()
@@ -81,16 +65,11 @@ try {
   error(message.charAt(0).toUpperCase() + message.slice(1))
 }
 
-async function syncShellrcForRun(config: ReturnType<typeof loadConfig>): Promise<void> {
+async function syncShellrcForRun(config: GlobalUserConfig): Promise<void> {
   try {
-    await syncManagedShellrc(config.shells, innerBinName)
+    await syncShellrc(config.shells)
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err)
     error(`Failed to sync shellrc: ${message}`)
   }
-}
-
-function getGlobalOptions(args: CommandActionArgs): GlobalOptions {
-  const maybeOptions = args[args.length - 1]
-  return (maybeOptions && typeof maybeOptions === 'object' ? maybeOptions : {}) as GlobalOptions
 }

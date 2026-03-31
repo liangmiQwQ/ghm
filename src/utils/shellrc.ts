@@ -1,31 +1,44 @@
 import { mkdir, readFile, writeFile } from 'node:fs/promises'
-import { homedir } from 'node:os'
 import path from 'node:path'
 import type { SupportedShell } from './config'
+import untildify from 'untildify'
+import { innerBinName } from './runner'
 
-export const GHM_START_MARKER = '#_GHM_START_'
-export const GHM_END_MARKER = '#_GHM_END_'
+export async function syncShellrc(shells: SupportedShell[]) {
+  for (const shell of shells) {
+    const managedBlock = buildManagedShellrcBlock(shell)
+    const shellRcPath = resolveShellRcPath(shell)
+    const existing = await readFileIfExists(shellRcPath)
+    const updated = upsertManagedShellrcBlock(existing, managedBlock)
 
-const shellRcRelativePaths: Record<SupportedShell, string> = {
-  zsh: '.zshrc',
-  bash: '.bashrc',
-  fish: '.config/fish/config.fish',
-}
-
-function getShellSourceCommands(binName: string): Record<SupportedShell, string> {
-  return {
-    bash: `source <(${binName} shell bash)`,
-    zsh: `source <(${binName} shell zsh)`,
-    fish: `${binName} shell fish | source`,
+    await mkdir(path.dirname(shellRcPath), { recursive: true })
+    await writeFile(shellRcPath, updated, 'utf8')
   }
 }
 
-export function resolveShellRcPath(shell: SupportedShell, homePath: string = homedir()): string {
-  return path.join(homePath, shellRcRelativePaths[shell])
+const GHM_START_MARKER = '#_GHM_START_'
+const GHM_END_MARKER = '#_GHM_END_'
+
+const shellRcRelativePaths: Record<SupportedShell, string> = {
+  zsh: '~/.zshrc',
+  bash: '~/.bashrc',
+  fish: '~/.config/fish/config.fish',
 }
 
-export function buildManagedShellrcBlock(shell: SupportedShell, binName: string): string {
-  const shellSourceCommands = getShellSourceCommands(binName)
+function getShellSourceCommands(): Record<SupportedShell, string> {
+  return {
+    bash: `source <(${innerBinName} shell bash)`,
+    zsh: `source <(${innerBinName} shell zsh)`,
+    fish: `${innerBinName} shell fish | source`,
+  }
+}
+
+function resolveShellRcPath(shell: SupportedShell): string {
+  return untildify(shellRcRelativePaths[shell])
+}
+
+function buildManagedShellrcBlock(shell: SupportedShell): string {
+  const shellSourceCommands = getShellSourceCommands()
   return [
     GHM_START_MARKER,
     '# Please do not edit the comments `#_GHM_START_` or `#_GHM_END_`, which probably makes ghm feature broken.',
@@ -34,7 +47,7 @@ export function buildManagedShellrcBlock(shell: SupportedShell, binName: string)
   ].join('\n')
 }
 
-export function upsertManagedShellrcBlock(content: string, managedBlock: string): string {
+function upsertManagedShellrcBlock(content: string, managedBlock: string): string {
   const escapedStart = escapeRegex(GHM_START_MARKER)
   const escapedEnd = escapeRegex(GHM_END_MARKER)
   const pattern = new RegExp(`^${escapedStart}$[\\s\\S]*?^${escapedEnd}$\\n?`, 'gm')
@@ -47,22 +60,6 @@ export function upsertManagedShellrcBlock(content: string, managedBlock: string)
 
   const trimmed = content.trimEnd()
   return trimmed ? `${trimmed}\n\n${managedBlock}\n` : `${managedBlock}\n`
-}
-
-export async function syncManagedShellrc(
-  shells: SupportedShell[],
-  binName: string,
-  homePath: string = homedir(),
-) {
-  for (const shell of shells) {
-    const managedBlock = buildManagedShellrcBlock(shell, binName)
-    const shellRcPath = resolveShellRcPath(shell, homePath)
-    const existing = await readFileIfExists(shellRcPath)
-    const updated = upsertManagedShellrcBlock(existing, managedBlock)
-
-    await mkdir(path.dirname(shellRcPath), { recursive: true })
-    await writeFile(shellRcPath, updated, 'utf8')
-  }
 }
 
 async function readFileIfExists(filePath: string): Promise<string> {
