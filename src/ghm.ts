@@ -53,6 +53,11 @@ cli.version(version || '0.0.0')
 
 try {
   cli.parse()
+
+  if (!cli.matchedCommand) {
+    cli.outputHelp()
+    process.exit(cli.args.length > 0 ? 1 : 0)
+  }
 } catch (err) {
   const message = err instanceof Error ? err.message : String(err)
   error(message.charAt(0).toUpperCase() + message.slice(1))

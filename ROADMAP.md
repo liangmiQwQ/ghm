@@ -71,15 +71,15 @@ The config file should be like:
 }
 ```
 
-### - [ ] `ghm` main command
+### - [ ] `ghm cd` command
 
-`ghm`
+`ghm cd`
 
 A wrapper of `cd` command
 
 Display a prompt, allow users to enter repo name to cd to it, also allow user cd to the root path or the owner path. (like cd to `~/code`, or `~/code/vitejs`)
 
-Because it needs to cd to the target directory, it needs to be a shell script. We change the `bin` name to `ghmi` and use a cli wrapper `ghm`(function) to call.
+Because it needs to cd to the target directory, it needs to be a shell script. We need add a wrapper `ghm`(function) to call it.
 
 ## - [ ] Stage Three: Add `fork` and `remote` control
 

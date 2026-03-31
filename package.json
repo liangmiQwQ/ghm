@@ -31,7 +31,8 @@
   },
   "scripts": {
     "build": "vp pack",
-    "dev": "tsx src/cli.ts --config ghmrc.json",
+    "ghm": "tsx src/ghm.ts --config ghmrc.json",
+    "ghmi": "tsx src/ghmi.ts",
     "preview": "node bin/cli.mjs",
     "test": "vp test run",
     "check": "vp check",
