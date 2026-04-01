@@ -143,36 +143,16 @@ async function writeConfigFile(
 }
 
 async function promptAliasConfig(): Promise<CommandAliasConfig | undefined> {
-  const withAlias = await promptConfirm(
-    'Would you like to add aliases for `ghm clone` and `ghm list`?',
-    'withAlias',
-  )
-  const withCdAlias = await promptConfirm(
-    'Would you like to add alias for `ghm cd` command?',
-    'withCdAlias',
-  )
-
+  const withAlias = await promptConfirm('Would you like to add command aliases?', 'withAlias')
   if (!withAlias) {
-    if (!withCdAlias) {
-      return undefined
-    }
-
-    const cdAliases = await promptCommandAlias('cd')
-    return cdAliases.length > 0 ? { cd: cdAliases } : undefined
+    return undefined
   }
 
   const aliases: CommandAliasConfig = {}
-  for (const command of aliasCommands.filter((command) => command !== 'cd')) {
+  for (const command of aliasCommands) {
     const parsed = await promptCommandAlias(command)
     if (parsed.length > 0) {
       aliases[command] = parsed
-    }
-  }
-
-  if (withCdAlias) {
-    const parsedCd = await promptCommandAlias('cd')
-    if (parsedCd.length > 0) {
-      aliases.cd = parsedCd
     }
   }
 

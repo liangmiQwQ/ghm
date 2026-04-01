@@ -43,10 +43,9 @@ ghm setup
 2. check `gh` authentication
 3. ask for your projects root directory
 4. ask which shell(s) you use (`zsh`, `bash`, `fish`)
-5. optionally collect aliases for `ghm clone` and `ghm list`
-6. ask whether to add an alias for `ghm cd`
-7. write `~/.config/ghmrc.json`
-8. sync managed shellrc blocks
+5. optionally collect aliases for `ghm clone`, `ghm list`, and `ghm cd`
+6. write `~/.config/ghmrc.json`
+7. sync managed shellrc blocks
 
 After setup:
 
