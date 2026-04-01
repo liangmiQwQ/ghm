@@ -3,7 +3,7 @@ import type { CommandAliasConfig } from '../utils/alias'
 import { buildAliasLines } from '../utils/alias'
 import { supportedShells } from '../utils/config'
 import { error } from '../utils/error'
-import { isConfig, useConfig } from '../state/config'
+import { isConfigExisting, useConfig } from '../state/config'
 
 export function generateShellIntegration(shell: string): string {
   if (!isValidShell(shell)) {
@@ -33,7 +33,7 @@ function isValidShell(shell: string): shell is SupportedShell {
 }
 
 function loadAliasConfig(): CommandAliasConfig {
-  if (!isConfig()) {
+  if (!isConfigExisting()) {
     return {}
   }
 

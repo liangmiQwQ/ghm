@@ -7,7 +7,7 @@ import { error } from './utils/error'
 import { syncShellrc } from './utils/shellrc'
 import type { GlobalUserConfig } from './utils/config'
 import { preventRunning, userBinName } from './utils/runner'
-import { isConfig, useConfig } from './state/config'
+import { isConfigExisting, useConfig } from './state/config'
 
 const cli = cac(userBinName)
 await preventRunning()
@@ -16,7 +16,7 @@ function withConfig<T extends any[]>(
   handler: (config: GlobalUserConfig, ...args: T) => Promise<void> | void,
 ) {
   return async (...args: T): Promise<void> => {
-    if (!isConfig()) {
+    if (!isConfigExisting()) {
       await promptRunSetupOnMissingConfig(runSetupCommand)
       return
     }
