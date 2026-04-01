@@ -1,7 +1,5 @@
-import { existsSync } from 'node:fs'
 import { cac } from 'cac'
 import { version } from '../package.json'
-import { getDefaultConfigPath, loadConfig } from './utils/config'
 import { runCloneCommand } from './commands/clone'
 import { runListCommand } from './commands/list'
 import { promptRunSetupOnMissingConfig, runSetupCommand } from './commands/setup'
@@ -9,6 +7,7 @@ import { error } from './utils/error'
 import { syncShellrc } from './utils/shellrc'
 import type { GlobalUserConfig } from './utils/config'
 import { preventRunning, userBinName } from './utils/runner'
+import { isConfig, useConfig } from './state/config'
 
 const cli = cac(userBinName)
 await preventRunning()
@@ -17,14 +16,12 @@ function withConfig<T extends any[]>(
   handler: (config: GlobalUserConfig, ...args: T) => Promise<void> | void,
 ) {
   return async (...args: T): Promise<void> => {
-    const configPath = getDefaultConfigPath()
-
-    if (!existsSync(configPath)) {
+    if (!isConfig()) {
       await promptRunSetupOnMissingConfig(runSetupCommand)
       return
     }
 
-    const config = loadConfig()
+    const config = useConfig()
     await syncShellrcForRun(config)
     return handler(config, ...args)
   }

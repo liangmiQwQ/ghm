@@ -1,9 +1,9 @@
-import { existsSync } from 'node:fs'
 import type { SupportedShell } from '../utils/config'
 import type { CommandAliasConfig } from '../utils/alias'
 import { buildAliasLines } from '../utils/alias'
-import { getDefaultConfigPath, loadConfig, supportedShells } from '../utils/config'
+import { supportedShells } from '../utils/config'
 import { error } from '../utils/error'
+import { isConfig, useConfig } from '../state/config'
 
 export function generateShellIntegration(shell: string): string {
   if (!isValidShell(shell)) {
@@ -33,13 +33,12 @@ function isValidShell(shell: string): shell is SupportedShell {
 }
 
 function loadAliasConfig(): CommandAliasConfig {
-  const configPath = getDefaultConfigPath()
-  if (!existsSync(configPath)) {
+  if (!isConfig()) {
     return {}
   }
 
   try {
-    const config = loadConfig()
+    const config = useConfig()
     return config.alias ?? {}
   } catch {
     return {}
