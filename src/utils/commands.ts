@@ -1,4 +1,5 @@
 import { x } from 'tinyexec'
+import which from 'which'
 import { error } from './error'
 
 export const runCommand = async (command: string, args: string[]) => {
@@ -6,14 +7,10 @@ export const runCommand = async (command: string, args: string[]) => {
   return { exitCode: result.exitCode ?? 1 }
 }
 
-export const ensureToolReady = async (
-  command: string,
-  args: string[],
-  panic = true,
-): Promise<boolean> => {
+export const ensureToolReady = async (command: string, panic = true): Promise<boolean> => {
   try {
-    const result = await runCommand(command, args)
-    if (result.exitCode === 0) {
+    const resolved = await which(command, { nothrow: true })
+    if (resolved) {
       return true
     }
   } catch {

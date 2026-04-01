@@ -10,8 +10,8 @@ export async function preventRunning() {
   }
 
   try {
-    const hasInner = await ensureToolReady(innerBinName, ['--version'], false)
-    const hasUser = await ensureToolReady(userBinName, ['--version'], false)
+    const hasInner = await ensureToolReady(innerBinName, false)
+    const hasUser = await ensureToolReady(userBinName, false)
 
     if (!hasInner || !hasUser) {
       throw new Error() // Trigger catch block

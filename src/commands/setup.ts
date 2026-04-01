@@ -11,7 +11,7 @@ import { syncShellrc } from '../utils/shellrc'
 import { error } from '../utils/error'
 import pc from 'picocolors'
 import { success, toTildePath } from '../utils/format'
-import { runCommand } from '../utils/commands'
+import { ensureToolReady, runCommand } from '../utils/commands'
 
 const CONFIG_SCHEMA_URL = 'https://raw.githubusercontent.com/liangmiQwQ/ghm/main/config_schema.json'
 
@@ -21,7 +21,7 @@ export async function runSetupCommand(): Promise<void> {
     error(`Config file already exists at ${toTildePath(configPath)}.`, 78)
   }
 
-  await ensureToolReady('git', ['--version'])
+  await ensureToolReady('git')
   await ensureGhAuthenticated()
 
   const rootInput = await promptText(
@@ -52,19 +52,6 @@ export async function promptRunSetupOnMissingConfig(runSetup: () => Promise<void
   }
 
   error('No config found. Setup is required before running this command.', 78)
-}
-
-async function ensureToolReady(command: string, args: string[]): Promise<void> {
-  try {
-    const result = await runCommand(command, args)
-    if (result.exitCode === 0) {
-      return
-    }
-  } catch {
-    // fall through to standardized error
-  }
-
-  error(`Required tool "${command}" is unavailable.`, 69)
 }
 
 async function ensureGhAuthenticated(): Promise<void> {
@@ -140,7 +127,7 @@ async function promptShellSelection(): Promise<SupportedShell[]> {
 
 async function ensureShellCommandsAvailable(shells: SupportedShell[]): Promise<void> {
   for (const shell of shells) {
-    await ensureToolReady(shell, ['--version'])
+    await ensureToolReady(shell)
   }
 }
 
