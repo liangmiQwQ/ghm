@@ -47,7 +47,7 @@ All the modify to shellrc should be controlled by ghm. So, we need to storage us
 
 Use `preunistall` to clear the config when uninstall.
 
-### - [ ] `setup` command
+### - [x] `setup` command
 
 Add a `ghm setup` command, to setup the settings and environment needed.
 
