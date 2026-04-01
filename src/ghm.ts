@@ -11,30 +11,24 @@ import type { GlobalUserConfig } from './utils/config'
 import { preventRunning, userBinName } from './utils/runner'
 
 const cli = cac(userBinName)
-
 await preventRunning()
-
-type GlobalOptions = { config?: string }
 
 function withConfig<T extends any[]>(
   handler: (config: GlobalUserConfig, ...args: T) => Promise<void> | void,
 ) {
   return async (...args: T): Promise<void> => {
-    const options = args[args.length - 1] as GlobalOptions
-    const configPath = options.config ? options.config : getDefaultConfigPath()
+    const configPath = getDefaultConfigPath()
 
-    if (!options.config && !existsSync(configPath)) {
+    if (!existsSync(configPath)) {
       await promptRunSetupOnMissingConfig(runSetupCommand)
       return
     }
 
-    const config = loadConfig(options.config)
+    const config = loadConfig()
     await syncShellrcForRun(config)
     return handler(config, ...args)
   }
 }
-
-cli.option('-c, --config <path>', 'Use a custom config file path')
 
 cli.command('setup', 'Setup config and shell integration for ghm').action(runSetupCommand)
 

@@ -4,6 +4,8 @@ import path from 'node:path'
 import untildify from 'untildify'
 
 import { parse } from 'jsonc-parser'
+import type { CommandAliasConfig } from './alias'
+import { aliasCommands, isAliasCommand, isValidAliasName } from './alias'
 
 import { error } from './error'
 
@@ -15,14 +17,15 @@ export type GlobalUserConfig = {
   // For the future use
   editor?: string
   shells: SupportedShell[]
+  alias?: CommandAliasConfig
 }
 
 export function getDefaultConfigPath(): string {
   return path.join(homedir(), '.config', 'ghmrc.json')
 }
 
-export function loadConfig(configPath?: string): GlobalUserConfig {
-  const configFilePath = configPath ? path.resolve(configPath) : getDefaultConfigPath()
+export function loadConfig(): GlobalUserConfig {
+  const configFilePath = getDefaultConfigPath()
 
   if (!existsSync(configFilePath)) {
     error(`Couldn't find config file at ${configFilePath}`)
@@ -48,6 +51,7 @@ function parseConfig(jsonc: string, configFilePath: string): GlobalUserConfig {
   }
 
   const shells = parseShells(config.shells, invalidConfigError)
+  const alias = parseAliasConfig(config.alias, invalidConfigError)
 
   const root = config.root
   if (typeof root !== 'string' || !root) {
@@ -68,6 +72,7 @@ function parseConfig(jsonc: string, configFilePath: string): GlobalUserConfig {
     root: rootPath,
     ...(config.editor ? { editor: String(config.editor) } : {}),
     shells,
+    ...(alias ? { alias } : {}),
   }
 }
 
@@ -106,6 +111,73 @@ function parseShells(
 
   if (!normalized.size) {
     invalidConfigError('"shells" must contain at least one shell')
+  }
+
+  return [...normalized]
+}
+
+function parseAliasConfig(
+  value: unknown,
+  invalidConfigError: (message: string) => never,
+): CommandAliasConfig | undefined {
+  if (value == null) {
+    return undefined
+  }
+
+  if (typeof value !== 'object' || Array.isArray(value)) {
+    invalidConfigError('"alias" must be an object')
+  }
+
+  const alias = value as Record<string, unknown>
+  const parsed: CommandAliasConfig = {}
+
+  for (const [command, aliases] of Object.entries(alias)) {
+    if (!isAliasCommand(command)) {
+      invalidConfigError(
+        `"alias" contains unsupported command "${command}". Supported: ${aliasCommands.join(', ')}`,
+      )
+    }
+
+    if (!Array.isArray(aliases)) {
+      invalidConfigError(`"alias.${command}" must be an array`)
+    }
+
+    const aliasValues = aliases.map((aliasName) => {
+      if (typeof aliasName !== 'string') {
+        invalidConfigError(`"alias.${command}" must contain strings only`)
+      }
+      return aliasName.trim()
+    })
+
+    const normalized = normalizeAliasValues(aliasValues, command, invalidConfigError)
+
+    if (normalized.length > 0) {
+      parsed[command] = normalized
+    }
+  }
+
+  return Object.keys(parsed).length > 0 ? parsed : undefined
+}
+
+function normalizeAliasValues(
+  aliases: string[],
+  command: string,
+  invalidConfigError: (message: string) => never,
+): string[] {
+  const normalized = new Set<string>()
+
+  for (const aliasName of aliases) {
+    if (!aliasName) {
+      continue
+    }
+
+    if (!isValidAliasName(aliasName)) {
+      invalidConfigError(
+        `"alias.${command}" contains invalid alias "${aliasName}". Alias must match [A-Za-z_][A-Za-z0-9_-]*`,
+      )
+    }
+
+    normalized.add(aliasName)
   }
 
   return [...normalized]

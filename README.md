@@ -18,12 +18,19 @@ Create `~/.config/ghmrc.json`:
 ```json
 {
   "root": "~/code",
-  "shells": ["zsh"]
+  "shells": ["zsh"],
+  "alias": {
+    "ghm": ["i"],
+    "clone": ["k"],
+    "list": ["li"]
+  }
 }
 ```
 
 `root` must exist and be a directory.
 `shells` is required and must include at least one of `zsh`, `bash`, and `fish`.
+`alias` is optional and supports command aliases for `ghm`, `clone`, and `list`.
+Alias names must match `[A-Za-z_][A-Za-z0-9_-]*`.
 
 ### Commands
 
@@ -39,14 +46,6 @@ List repos under `<root>`:
 ```bash
 ghm list
 ghm ls
-```
-
-### Options
-
-Use a custom config path:
-
-```bash
-ghm --config /path/to/ghmrc.json list
 ```
 
 ## License

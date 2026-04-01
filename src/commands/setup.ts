@@ -4,12 +4,14 @@ import path from 'node:path'
 import prompts from 'prompts'
 import untildify from 'untildify'
 import type { SupportedShell } from '../utils/config'
+import type { CommandAliasConfig } from '../utils/alias'
+import { aliasCommands, defaultAliases, getAliasPromptLabel, parseAliasInput } from '../utils/alias'
 import { getDefaultConfigPath, supportedShells } from '../utils/config'
 import { syncShellrc } from '../utils/shellrc'
 import { error } from '../utils/error'
 import pc from 'picocolors'
 import { success, toTildePath } from '../utils/format'
-import { runCommand } from '../utils/commands'
+import { ensureToolReady, runCommand } from '../utils/commands'
 
 const CONFIG_SCHEMA_URL = 'https://raw.githubusercontent.com/liangmiQwQ/ghm/main/config_schema.json'
 
@@ -19,7 +21,7 @@ export async function runSetupCommand(): Promise<void> {
     error(`Config file already exists at ${toTildePath(configPath)}.`, 78)
   }
 
-  await ensureToolReady('git', ['--version'])
+  await ensureToolReady('git')
   await ensureGhAuthenticated()
 
   const rootInput = await promptText(
@@ -30,8 +32,9 @@ export async function runSetupCommand(): Promise<void> {
 
   const selectedShells = await promptShellSelection()
   await ensureShellCommandsAvailable(selectedShells)
+  const aliases = await promptAliasConfig()
 
-  await writeConfigFile(configPath, rootPath, selectedShells)
+  await writeConfigFile(configPath, rootPath, selectedShells, aliases)
   await syncShellrc(selectedShells)
 
   success(`Setup completed. Config written to ${pc.cyan(toTildePath(configPath))}`)
@@ -49,19 +52,6 @@ export async function promptRunSetupOnMissingConfig(runSetup: () => Promise<void
   }
 
   error('No config found. Setup is required before running this command.', 78)
-}
-
-async function ensureToolReady(command: string, args: string[]): Promise<void> {
-  try {
-    const result = await runCommand(command, args)
-    if (result.exitCode === 0) {
-      return
-    }
-  } catch {
-    // fall through to standardized error
-  }
-
-  error(`Required tool "${command}" is unavailable.`, 69)
 }
 
 async function ensureGhAuthenticated(): Promise<void> {
@@ -137,7 +127,7 @@ async function promptShellSelection(): Promise<SupportedShell[]> {
 
 async function ensureShellCommandsAvailable(shells: SupportedShell[]): Promise<void> {
   for (const shell of shells) {
-    await ensureToolReady(shell, ['--version'])
+    await ensureToolReady(shell)
   }
 }
 
@@ -145,18 +135,45 @@ async function writeConfigFile(
   configPath: string,
   rootPath: string,
   shells: SupportedShell[],
+  alias?: CommandAliasConfig,
 ): Promise<void> {
   const content = `${JSON.stringify(
     {
       $schema: CONFIG_SCHEMA_URL,
       root: rootPath,
       shells,
+      ...(alias ? { alias } : {}),
     },
     null,
     2,
   )}\n`
   await mkdir(path.dirname(configPath), { recursive: true })
   await writeFile(configPath, content, 'utf8')
+}
+
+async function promptAliasConfig(): Promise<CommandAliasConfig | undefined> {
+  const withAlias = await promptConfirm('Would you like to add alias for ghm use?', 'withAlias')
+  if (!withAlias) {
+    return undefined
+  }
+
+  const aliases: CommandAliasConfig = {}
+  for (const command of aliasCommands) {
+    const suggested = defaultAliases[command]
+    const commandLabel = getAliasPromptLabel(command)
+    const input = await promptText(
+      `Which alias would you like to use for "${commandLabel}"? Suggested: ${suggested}. Use "," to separate multiple aliases, leave blank for none. Alias must match [A-Za-z_][A-Za-z0-9_-]*.`,
+      `alias_${command}`,
+    )
+    const parsed = parseAliasInput(input, (aliasName) => {
+      error(`Invalid alias "${aliasName}". Alias must match [A-Za-z_][A-Za-z0-9_-]*.`, 78)
+    })
+    if (parsed.length > 0) {
+      aliases[command] = parsed
+    }
+  }
+
+  return Object.keys(aliases).length > 0 ? aliases : undefined
 }
 
 async function promptText(message: string, name: string): Promise<string> {
