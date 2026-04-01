@@ -5,7 +5,7 @@ import untildify from 'untildify'
 
 import { parse } from 'jsonc-parser'
 import type { CommandAliasConfig } from './alias'
-import { aliasCommands, isAliasCommand, parseAliasInput } from './alias'
+import { aliasCommands, isAliasCommand, isValidAliasName } from './alias'
 
 import { error } from './error'
 
@@ -24,8 +24,8 @@ export function getDefaultConfigPath(): string {
   return path.join(homedir(), '.config', 'ghmrc.json')
 }
 
-export function loadConfig(configPath?: string): GlobalUserConfig {
-  const configFilePath = configPath ? path.resolve(configPath) : getDefaultConfigPath()
+export function loadConfig(): GlobalUserConfig {
+  const configFilePath = getDefaultConfigPath()
 
   if (!existsSync(configFilePath)) {
     error(`Couldn't find config file at ${configFilePath}`)
@@ -146,14 +146,10 @@ function parseAliasConfig(
       if (typeof aliasName !== 'string') {
         invalidConfigError(`"alias.${command}" must contain strings only`)
       }
-      return aliasName
+      return aliasName.trim()
     })
 
-    const normalized = parseAliasInput(aliasValues.join(','), (aliasName) => {
-      invalidConfigError(
-        `"alias.${command}" contains invalid alias "${aliasName}". Aliases cannot include spaces or commas`,
-      )
-    })
+    const normalized = normalizeAliasValues(aliasValues, command, invalidConfigError)
 
     if (normalized.length > 0) {
       parsed[command] = normalized
@@ -161,4 +157,28 @@ function parseAliasConfig(
   }
 
   return Object.keys(parsed).length > 0 ? parsed : undefined
+}
+
+function normalizeAliasValues(
+  aliases: string[],
+  command: string,
+  invalidConfigError: (message: string) => never,
+): string[] {
+  const normalized = new Set<string>()
+
+  for (const aliasName of aliases) {
+    if (!aliasName) {
+      continue
+    }
+
+    if (!isValidAliasName(aliasName)) {
+      invalidConfigError(
+        `"alias.${command}" contains invalid alias "${aliasName}". Alias must match [A-Za-z_][A-Za-z0-9_-]*`,
+      )
+    }
+
+    normalized.add(aliasName)
+  }
+
+  return [...normalized]
 }

@@ -39,7 +39,7 @@ function loadAliasConfig(): CommandAliasConfig {
   }
 
   try {
-    const config = loadConfig(configPath)
+    const config = loadConfig()
     return config.alias ?? {}
   } catch {
     return {}

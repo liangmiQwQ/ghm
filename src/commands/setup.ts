@@ -162,11 +162,11 @@ async function promptAliasConfig(): Promise<CommandAliasConfig | undefined> {
     const suggested = defaultAliases[command]
     const commandLabel = getAliasPromptLabel(command)
     const input = await promptText(
-      `Which alias would you like to use for "${commandLabel}"? Suggested: ${suggested}. Use "," to separate multiple aliases, leave blank for none.`,
+      `Which alias would you like to use for "${commandLabel}"? Suggested: ${suggested}. Use "," to separate multiple aliases, leave blank for none. Alias must match [A-Za-z_][A-Za-z0-9_-]*.`,
       `alias_${command}`,
     )
     const parsed = parseAliasInput(input, (aliasName) => {
-      error(`Invalid alias "${aliasName}". Aliases cannot include spaces or commas.`, 78)
+      error(`Invalid alias "${aliasName}". Alias must match [A-Za-z_][A-Za-z0-9_-]*.`, 78)
     })
     if (parsed.length > 0) {
       aliases[command] = parsed

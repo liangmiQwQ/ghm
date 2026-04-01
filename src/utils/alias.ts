@@ -8,6 +8,8 @@ export const defaultAliases: Record<AliasCommand, string> = {
   list: 'li',
 }
 
+const aliasNameRegex = /^[A-Za-z_][A-Za-z0-9_-]*$/
+
 export function parseAliasInput(input: string, onInvalid?: (aliasName: string) => never): string[] {
   const trimmed = input.trim()
   if (!trimmed) {
@@ -70,7 +72,7 @@ export function isAliasCommand(value: string): value is AliasCommand {
 }
 
 export function isValidAliasName(value: string): boolean {
-  return /^[^\s,]+$/.test(value)
+  return aliasNameRegex.test(value)
 }
 
 function getAliasTarget(command: AliasCommand): string {
