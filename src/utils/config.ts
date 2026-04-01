@@ -4,14 +4,13 @@ import path from 'node:path'
 import untildify from 'untildify'
 
 import { parse } from 'jsonc-parser'
+import type { CommandAliasConfig } from './alias'
+import { aliasCommands, isAliasCommand, parseAliasInput } from './alias'
 
 import { error } from './error'
 
 export const supportedShells = ['zsh', 'bash', 'fish'] as const
 export type SupportedShell = (typeof supportedShells)[number]
-export const aliasCommands = ['clone', 'list'] as const
-export type AliasCommand = (typeof aliasCommands)[number]
-export type CommandAliasConfig = Partial<Record<AliasCommand, string[]>>
 
 export type GlobalUserConfig = {
   root: string
@@ -133,7 +132,7 @@ function parseAliasConfig(
   const parsed: CommandAliasConfig = {}
 
   for (const [command, aliases] of Object.entries(alias)) {
-    if (!aliasCommands.includes(command as AliasCommand)) {
+    if (!isAliasCommand(command)) {
       invalidConfigError(
         `"alias" contains unsupported command "${command}". Supported: ${aliasCommands.join(', ')}`,
       )
@@ -143,28 +142,21 @@ function parseAliasConfig(
       invalidConfigError(`"alias.${command}" must be an array`)
     }
 
-    const normalized = new Set<string>()
-    for (const aliasName of aliases) {
+    const aliasValues = aliases.map((aliasName) => {
       if (typeof aliasName !== 'string') {
         invalidConfigError(`"alias.${command}" must contain strings only`)
       }
+      return aliasName
+    })
 
-      const trimmed = aliasName.trim()
-      if (!trimmed) {
-        continue
-      }
+    const normalized = parseAliasInput(aliasValues.join(','), (aliasName) => {
+      invalidConfigError(
+        `"alias.${command}" contains invalid alias "${aliasName}". Aliases cannot include spaces or commas`,
+      )
+    })
 
-      if (/[\s,]/.test(trimmed)) {
-        invalidConfigError(
-          `"alias.${command}" contains invalid alias "${aliasName}". Aliases cannot include spaces or commas`,
-        )
-      }
-
-      normalized.add(trimmed)
-    }
-
-    if (normalized.size > 0) {
-      parsed[command as AliasCommand] = [...normalized]
+    if (normalized.length > 0) {
+      parsed[command] = normalized
     }
   }
 

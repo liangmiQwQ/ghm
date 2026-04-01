@@ -3,8 +3,10 @@ import { mkdir, stat, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 import prompts from 'prompts'
 import untildify from 'untildify'
-import type { AliasCommand, CommandAliasConfig, SupportedShell } from '../utils/config'
-import { aliasCommands, getDefaultConfigPath, supportedShells } from '../utils/config'
+import type { SupportedShell } from '../utils/config'
+import type { CommandAliasConfig } from '../utils/alias'
+import { aliasCommands, defaultAliases, getAliasPromptLabel, parseAliasInput } from '../utils/alias'
+import { getDefaultConfigPath, supportedShells } from '../utils/config'
 import { syncShellrc } from '../utils/shellrc'
 import { error } from '../utils/error'
 import pc from 'picocolors'
@@ -12,10 +14,6 @@ import { success, toTildePath } from '../utils/format'
 import { runCommand } from '../utils/commands'
 
 const CONFIG_SCHEMA_URL = 'https://raw.githubusercontent.com/liangmiQwQ/ghm/main/config_schema.json'
-const defaultAliases: Record<AliasCommand, string> = {
-  clone: 'k',
-  list: 'li',
-}
 
 export async function runSetupCommand(): Promise<void> {
   const configPath = getDefaultConfigPath()
@@ -175,41 +173,20 @@ async function promptAliasConfig(): Promise<CommandAliasConfig | undefined> {
   const aliases: CommandAliasConfig = {}
   for (const command of aliasCommands) {
     const suggested = defaultAliases[command]
-    const commandLabel = `ghm ${command}`
+    const commandLabel = getAliasPromptLabel(command)
     const input = await promptText(
       `Which alias would you like to use for "${commandLabel}"? Suggested: ${suggested}. Use "," to separate multiple aliases, leave blank for none.`,
       `alias_${command}`,
     )
-    const parsed = parseAliasInput(input)
+    const parsed = parseAliasInput(input, (aliasName) => {
+      error(`Invalid alias "${aliasName}". Aliases cannot include spaces or commas.`, 78)
+    })
     if (parsed.length > 0) {
       aliases[command] = parsed
     }
   }
 
   return Object.keys(aliases).length > 0 ? aliases : undefined
-}
-
-function parseAliasInput(input: string): string[] {
-  const trimmed = input.trim()
-  if (!trimmed) {
-    return []
-  }
-
-  const parsed = new Set<string>()
-  for (const alias of trimmed.split(',')) {
-    const value = alias.trim()
-    if (!value) {
-      continue
-    }
-
-    if (/[\s,]/.test(value)) {
-      error(`Invalid alias "${value}". Aliases cannot include spaces or commas.`, 78)
-    }
-
-    parsed.add(value)
-  }
-
-  return [...parsed]
 }
 
 async function promptText(message: string, name: string): Promise<string> {
