@@ -27,6 +27,9 @@ function createWrapperContent(entryPath: string): string {
   return [
     '#!/usr/bin/env sh',
     `# ${managedMarker}`,
+    `case "$PWD" in ${shellQuote(repoRoot)}|${shellQuote(`${repoRoot}/*`)}) ;;`,
+    `*) echo ${shellQuote(`ghm dev wrapper can only run inside ${repoRoot}`)} >&2; exit 78 ;;`,
+    'esac',
     `exec ${shellQuote(tsxBin)} ${shellQuote(entryPath)} "$@"`,
     '',
   ].join('\n')
