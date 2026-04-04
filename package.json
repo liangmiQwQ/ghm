@@ -43,10 +43,13 @@
   },
   "dependencies": {
     "@inquirer/prompts": "^8.3.2",
-    "jsonc-parser": "^3.3.1"
+    "ink": "^6.8.0",
+    "jsonc-parser": "^3.3.1",
+    "react": "^19.2.4"
   },
   "devDependencies": {
     "@types/node": "^25.5.0",
+    "@types/react": "^19.2.14",
     "@types/which": "^3.0.4",
     "@typescript/native-preview": "7.0.0-dev.20260316.1",
     "bumpp": "^11.0.1",
