@@ -35,7 +35,6 @@ $ mo cd
 ❯ ni (antfu-collective) (the suffix should be dimmed)
   ni (liangmiQwQ)
 
-  Related Owners:
   antfu-collective (dimmed as owner name, selectable)
   liangmiQwQ (dimmed as owner name, selectable)
 ```
