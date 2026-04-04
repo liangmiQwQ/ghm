@@ -1,5 +1,6 @@
-import { readdirSync } from 'node:fs'
+import { readdirSync, writeFileSync } from 'node:fs'
 import path from 'node:path'
+import { tmpdir } from 'node:os'
 import type { GlobalUserConfig } from '../utils/config'
 import { error } from '../utils/error'
 import { promptAutocomplete } from '../utils/prompt'
@@ -18,7 +19,8 @@ export async function runCdCommand(
     ? resolvePathFromTarget(resolvedTarget, config.root)
     : await promptLocationPath(config.root)
 
-  process.stdout.write(`${nextPath}\n`)
+  const targetFile = path.join(tmpdir(), 'mo-cd-target')
+  writeFileSync(targetFile, nextPath, 'utf8')
 }
 
 function resolvePathFromTarget(target: string, root: string): string {
