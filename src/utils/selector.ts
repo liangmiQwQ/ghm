@@ -273,37 +273,79 @@ const locationPrompt = createPrompt<
     }
   })
 
-  // Sticky header: pin the active item's owner group label above the scrollable page when scrolled out of view
+  // Sticky header: pin the owner group label above the scrollable page when the owner header is scrolled out of view but some items in the group are still visible
   // When a sticky header is shown, we reduce the page size by 1 to keep total displayed lines constant.
   let stickyHeader = ''
   let pageSizeForItems = PAGE_SIZE
   if (!searchTerm) {
-    const activeItem = items[safeActive]
-    if (activeItem && isSelectable(activeItem) && activeItem.group) {
-      const ownerIndex = items.findIndex(
-        (i) => isSelectable(i) && i.isOwner && i.group === activeItem.group,
-      )
+    // Find all owner items
+    const ownerIndices: Array<{ index: number; group: string }> = []
+    items.forEach((item, idx) => {
+      if (isSelectable(item) && item.isOwner && item.group) {
+        ownerIndices.push({ index: idx, group: item.group })
+      }
+    })
 
-      const middleOfList = Math.floor(pageSizeForItems / 2)
-      let startIndex = Math.max(0, safeActive - middleOfList)
+    // Compute initial visible range based on active item and default page size
+    const middleOfList = Math.floor(pageSizeForItems / 2)
+    let startIndex = Math.max(0, safeActive - middleOfList)
+    if (startIndex + pageSizeForItems > items.length) {
+      startIndex = Math.max(0, items.length - pageSizeForItems)
+    }
+
+    // Find the last owner group where the owner header is scrolled out but some items are still visible
+    let candidate: { index: number; group: string; groupEndIdx: number } | undefined
+
+    for (let i = ownerIndices.length - 1; i >= 0; i--) {
+      const owner = ownerIndices[i]
+      const ownerIdx = owner.index
+
+      // Find the last item in this group
+      let groupEndIdx = ownerIdx
+      for (let j = ownerIdx + 1; j < items.length; j++) {
+        const item = items[j]
+        if (isSelectable(item) && item.group === owner.group) {
+          groupEndIdx = j
+        } else if (isSelectable(item) && item.group !== owner.group) {
+          // Reached next group
+          break
+        }
+        // Skip separators and non-selectable items
+      }
+
+      // Check if owner header is scrolled out but some items are still visible
+      if (ownerIdx < startIndex && groupEndIdx >= startIndex) {
+        candidate = { ...owner, groupEndIdx }
+        break
+      }
+    }
+
+    if (candidate) {
+      stickyHeader = `  ${pc.bold(pc.cyan(candidate.group))}\n`
+      pageSizeForItems = PAGE_SIZE - 1
+      // Recompute startIndex with adjusted page size
+      const middleOfListAdjusted = Math.floor(pageSizeForItems / 2)
+      startIndex = Math.max(0, safeActive - middleOfListAdjusted)
       if (startIndex + pageSizeForItems > items.length) {
         startIndex = Math.max(0, items.length - pageSizeForItems)
       }
 
-      if (ownerIndex !== -1 && ownerIndex < startIndex) {
-        stickyHeader = `  ${pc.bold(pc.cyan(activeItem.group))}\n`
-        pageSizeForItems = PAGE_SIZE - 1
-        // Recompute startIndex with adjusted page size
-        const middleOfListAdjusted = Math.floor(pageSizeForItems / 2)
-        startIndex = Math.max(0, safeActive - middleOfListAdjusted)
-        if (startIndex + pageSizeForItems > items.length) {
-          startIndex = Math.max(0, items.length - pageSizeForItems)
+      // Re-check condition with adjusted startIndex
+      const ownerIdx = candidate.index
+      let groupEndIdx = ownerIdx
+      for (let j = ownerIdx + 1; j < items.length; j++) {
+        const item = items[j]
+        if (isSelectable(item) && item.group === candidate.group) {
+          groupEndIdx = j
+        } else if (isSelectable(item) && item.group !== candidate.group) {
+          break
         }
-        // If owner index is now visible, remove sticky header
-        if (ownerIndex >= startIndex) {
-          stickyHeader = ''
-          pageSizeForItems = PAGE_SIZE
-        }
+      }
+
+      // If condition no longer holds (owner header visible or no items visible), remove sticky header
+      if (!(ownerIdx < startIndex && groupEndIdx >= startIndex)) {
+        stickyHeader = ''
+        pageSizeForItems = PAGE_SIZE
       }
     }
   }
