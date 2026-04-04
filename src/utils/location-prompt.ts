@@ -197,7 +197,7 @@ const locationPrompt = createPrompt<
         else if (selected.isRepoMatch) dp = `${selected.ownerName}/${selected.name}`
         else if (selected.group) dp = `${selected.group}/${selected.name}`
 
-        setDoneText(dp + ` ${pc.dim(`(${toTildePath(selected.value)})`)}`)
+        setDoneText(dp + ` ${pc.black(pc.dim(`(${toTildePath(selected.value)})`))}`)
         done(selected.value)
       } else {
         rl.write(searchTerm)
@@ -273,7 +273,7 @@ const locationPrompt = createPrompt<
   let helpTip = ''
   const currentItem = items[safeActive]
   if (currentItem && isSelectable(currentItem)) {
-    helpTip = `\n\n  ${pc.gray(`Path: ${toTildePath(currentItem.value)}`)}`
+    helpTip = `\n\n  ${pc.dim(`Path: ${toTildePath(currentItem.value)}`)}`
   }
 
   const searchStr = pc.cyan(searchTerm)
@@ -290,7 +290,7 @@ const locationPrompt = createPrompt<
 
 export async function promptLocationPath(root: string): Promise<string> {
   const groups = collectOwnerGroups(root)
-  return locationPrompt({ root, message: 'Where would you like to go?', groups }).catch(
+  return locationPrompt({ root, message: pc.bold('Where would you like to go?'), groups }).catch(
     (err: unknown) => {
       if (err instanceof Error && err.name === 'ExitPromptError') {
         error('Operation canceled.', 78)
