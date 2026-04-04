@@ -186,9 +186,7 @@ const locationPrompt = createPrompt<
           rl.cursor = 0
         }
       } else {
-        const err = new Error('Operation canceled.')
-        err.name = 'ExitPromptError'
-        throw err
+        error('Operation canceled.', 78)
       }
     } else if (isEnterKey(key)) {
       const selected = items[safeActive]
