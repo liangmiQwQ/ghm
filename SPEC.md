@@ -17,7 +17,7 @@ Core state: `"list" | "search" | "succeed" | "error"`
 
   The selector has two modes: list mode and search mode. The default mode is list mode. The user can switch to search mode by typing something in the input field.
 
-  The unselected projects' name should always be gray. The selected one should be underlined and green.
+  The unselected projects' name should always be ~~gray~~default. The selected one should be underlined and green.
 
   The pointer should be on the first item selectable by default. Keep its position at the middle of the list (And allow its position to be moved at the top or bottom of the list when scrolling)
 
@@ -31,14 +31,14 @@ Core state: `"list" | "search" | "succeed" | "error"`
 
   Search mode: Render two lists with search algorithm, can search in both project name and owner name. Highlight the matched characters (bold and green). A blank line should be added between the two lists.
 
-  The first lists is about the projects. Project name in gray by default. Add a dim suffix `(owner name)` to the project name.
+  The first lists is about the projects. Project name in ~~gray~~default style by default. Add a dim suffix `(owner name)` to the project name.
 
-  The second list is about the owners. Owner name in dim by default. Owners related to the projects searched should also be adden in this list. (e.g. if user search `core`, then `vuejs` should be added to this list, even if no characters matched)
+  The second list is about the owners. Owner name in dim by default. Owners related to the projects searched should also be adden in this list. (e.g. if user search `core`, then `vuejs` should be added to this list, even if no characters matched), but this cannot be reversed. (e.g. searching `vuejs` should not make `core` added in project list)
 
   It should be hidden in succeed and error mode.
 
 - Footer: The footer is a line of text, and it has only two status
-  If the user's pointer is on a valid path, it should display the path of the project. (dim the prefix and gray the path)
+  If the user's pointer is on a valid path, it should display the path of the project. (dim the prefix and ~~gray~~default style the path)
   If the user's pointer is on nothing, it should display the message that no directory found with dim and italic format
 
   It should be hidden in succeed and error mode.
