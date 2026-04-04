@@ -16,6 +16,7 @@ import {
 import figures from '@inquirer/figures'
 import pc from 'picocolors'
 import { error } from './error'
+import { toTildePath } from './format'
 
 // ---- Types ----
 
@@ -149,9 +150,11 @@ const locationPrompt = createPrompt<
 >((config, done) => {
   const { root, groups } = config
   const theme = makeTheme({})
-  const prefix = usePrefix({ status: 'idle', theme })
+  const [status, setStatus] = useState<'idle' | 'done'>('idle')
+  const prefix = usePrefix({ status, theme })
 
   const [searchTerm, setSearchTerm] = useState('')
+  const [doneText, setDoneText] = useState('')
 
   const items = useMemo<ListItem[]>(
     () =>
@@ -186,6 +189,15 @@ const locationPrompt = createPrompt<
     } else if (isEnterKey(key)) {
       const selected = items[safeActive]
       if (selected && isSelectable(selected)) {
+        setStatus('done')
+
+        let dp = selected.name
+        if (selected.isOwner) dp = selected.name
+        else if (selected.isRoot) dp = '<root>'
+        else if (selected.isRepoMatch) dp = `${selected.ownerName}/${selected.name}`
+        else if (selected.group) dp = `${selected.group}/${selected.name}`
+
+        setDoneText(dp + ` ${pc.dim(`(${toTildePath(selected.value)})`)}`)
         done(selected.value)
       } else {
         rl.write(searchTerm)
@@ -261,15 +273,16 @@ const locationPrompt = createPrompt<
   let helpTip = ''
   const currentItem = items[safeActive]
   if (currentItem && isSelectable(currentItem)) {
-    const home = process.env.HOME || ''
-    const p = currentItem.value.startsWith(home)
-      ? currentItem.value.replace(home, '~')
-      : currentItem.value
-    helpTip = `\n\n  ${pc.gray(`Path: ${p}`)}`
+    helpTip = `\n\n  ${pc.gray(`Path: ${toTildePath(currentItem.value)}`)}`
   }
 
   const searchStr = pc.cyan(searchTerm)
   const header = [prefix, config.message, searchStr].filter(Boolean).join(' ').trimEnd()
+
+  if (status === 'done') {
+    return `${prefix} ${config.message} ${pc.cyan(doneText)}`
+  }
+
   const body = `${stickyHeader}${page}${helpTip}`
 
   return [header, body]
