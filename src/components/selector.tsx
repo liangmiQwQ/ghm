@@ -323,7 +323,7 @@ function SearchModeView({
       if (isSelected) {
         lines.push(prefix + pc.underline(pc.green(item.label)))
       } else {
-        lines.push(prefix + highlightMatch(item.label, query, pc.dim))
+        lines.push(prefix + highlightMatch(item.label, query, pc.gray))
       }
     }
   }
@@ -332,10 +332,15 @@ function SearchModeView({
 }
 
 function Footer({ path: footerPath, noMatch }: { path: string; noMatch: boolean }) {
-  if (noMatch) {
-    return <Text>{pc.dim(pc.italic('No directory found'))}</Text>
-  }
-  return <Text>{pc.dim('Path: ') + toTildePath(footerPath)}</Text>
+  const text = noMatch
+    ? pc.dim(pc.italic('\n No directory found'))
+    : pc.dim('Path: ') + pc.gray(toTildePath(footerPath))
+  return (
+    <>
+      <Text> </Text>
+      <Text>{text}</Text>
+    </>
+  )
 }
 
 // --- Main Selector ---
