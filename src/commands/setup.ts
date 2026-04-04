@@ -11,17 +11,10 @@ import { error } from '../utils/error'
 import pc from 'picocolors'
 import { success, toTildePath } from '../utils/format'
 import { ensureToolReady, runCommand } from '../utils/commands'
-import {
-  promptConfirm,
-  promptMultiselect,
-  promptText,
-  useSquareMultiselectIndicator,
-} from '../utils/prompt'
+import { promptConfirm, promptMultiselect, promptText } from '../utils/prompt'
 
 const CONFIG_SCHEMA_URL = 'https://raw.githubusercontent.com/liangmiQwQ/mo/main/config_schema.json'
 const ALIAS_NAME_PATTERN = '[A-Za-z_][A-Za-z0-9_-]*'
-
-useSquareMultiselectIndicator()
 
 export async function runSetupCommand(): Promise<void> {
   const configPath = getDefaultConfigPath()

@@ -1,9 +1,5 @@
-import { createRequire } from 'node:module'
-import prompts from 'prompts'
+import { checkbox, confirm, input, search } from '@inquirer/prompts'
 import { error } from './error'
-
-const require = createRequire(import.meta.url)
-const promptFigures = require('prompts/lib/util/figures') as { radioOn?: string; radioOff?: string }
 
 type TextPromptOptions = {
   initial?: string
@@ -19,100 +15,73 @@ const onSetupCancel = () => {
   error('Setup canceled.', 78)
 }
 
-export function useSquareMultiselectIndicator(): void {
-  promptFigures.radioOn = '■'
-  promptFigures.radioOff = '□'
+function catchCancel<T>(promise: Promise<T>, onCancel: () => void = onSetupCancel): Promise<T> {
+  return promise.catch((err) => {
+    if (err instanceof Error && err.name === 'ExitPromptError') {
+      onCancel()
+    }
+    throw err
+  })
 }
 
 export async function promptText(
   message: string,
-  name: string,
+  _name: string,
   options: TextPromptOptions = {},
 ): Promise<string> {
-  const answer = await prompts(
-    {
-      type: 'text',
-      name,
+  const answer = await catchCancel(
+    input({
       message,
-      ...options,
-    },
-    {
-      onCancel: onSetupCancel,
-    },
+      default: options.initial,
+      validate: options.validate,
+    }),
   )
-
-  const value = answer[name]
-  return typeof value === 'string' ? value : ''
+  return answer || ''
 }
 
-export async function promptConfirm(message: string, name: string): Promise<boolean> {
-  const answer = await prompts(
-    {
-      type: 'confirm',
-      name,
+export async function promptConfirm(message: string, _name: string): Promise<boolean> {
+  return catchCancel(
+    confirm({
       message,
-      initial: true,
-    },
-    {
-      onCancel: onSetupCancel,
-    },
+      default: true,
+    }),
   )
-
-  return Boolean(answer[name])
 }
 
 export async function promptMultiselect<T extends string>(
   message: string,
-  name: string,
+  _name: string,
   choices: Array<{ title: string; value: T }>,
 ): Promise<T[]> {
-  const answer = await prompts(
-    {
-      type: 'multiselect',
-      name,
+  return catchCancel(
+    checkbox({
       message,
-      instructions: false,
-      min: 1,
-      choices,
-    },
-    {
-      onCancel: onSetupCancel,
-    },
+      choices: choices.map((c) => ({ name: c.title, value: c.value })),
+    }),
   )
-
-  const selected = answer[name]
-  return Array.isArray(selected)
-    ? selected.filter((value): value is T => typeof value === 'string')
-    : []
 }
 
 export async function promptAutocomplete<T>(
   message: string,
-  name: string,
+  _name: string,
   choices: AutocompleteChoice<T>[],
   onCancelMessage: string,
 ): Promise<T | undefined> {
-  const answer = await prompts(
-    {
-      type: 'autocomplete',
-      name,
+  return catchCancel(
+    search({
       message,
-      choices,
-      suggest: async (input: string, options) => {
-        const query = input.trim().toLowerCase()
+      source: async (term: string | undefined) => {
+        const query = (term || '').trim().toLowerCase()
         if (!query) {
-          return options
+          return choices.map((c) => ({ name: c.title, value: c.value }))
         }
-
-        return options.filter((option) => option.title.toLowerCase().includes(query))
+        return choices
+          .filter((option) => option.title.toLowerCase().includes(query))
+          .map((c) => ({ name: c.title, value: c.value }))
       },
-    },
-    {
-      onCancel: () => {
-        error(onCancelMessage, 78)
-      },
+    }),
+    () => {
+      error(onCancelMessage, 78)
     },
   )
-
-  return answer[name] as T | undefined
 }
