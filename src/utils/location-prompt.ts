@@ -92,6 +92,7 @@ function buildBrowseItems(root: string, groups: OwnerGroup[]): ListItem[] {
         name: repo.name,
         short: `${group.name}/${repo.name}`,
         group: group.name,
+        ownerName: group.name,
       })
     }
   }
@@ -103,7 +104,7 @@ function buildSearchItems(query: string, root: string, groups: OwnerGroup[]): Li
   const q = query.trim().toLowerCase()
   const items: ListItem[] = []
 
-  if (q === '.' || q === '<root>') {
+  if (q === '.' || q === 'root' || q === '<root>') {
     items.push({ value: root, name: '<root>', short: '<root>', group: null, isRoot: true })
   }
 
@@ -126,6 +127,9 @@ function buildSearchItems(query: string, root: string, groups: OwnerGroup[]): Li
 
   const ownerMatches = groups.filter((g) => g.name.toLowerCase().includes(q))
   if (ownerMatches.length > 0) {
+    if (items.length > 0) {
+      items.push(new Separator(' '))
+    }
     for (const g of ownerMatches) {
       items.push({
         value: g.path,
@@ -233,10 +237,14 @@ const locationPrompt = createPrompt<
 
       let displayName = item.name
       if (item.isOwner) {
-        displayName = isActive ? displayName : pc.cyan(displayName)
-        displayName = pc.bold(displayName)
-      } else if (item.isRepoMatch) {
-        displayName = `${item.name} ${pc.dim(`(${item.ownerName})`)}`
+        if (searchTerm) {
+          displayName = isActive ? displayName : pc.black(pc.dim(displayName))
+        } else {
+          displayName = isActive ? displayName : pc.cyan(displayName)
+          displayName = pc.bold(displayName)
+        }
+      } else if (item.ownerName) {
+        displayName = `${item.name} ${pc.black(pc.dim(`(${item.ownerName})`))}`
       } else if (item.isRoot) {
         // stay as is
       }
