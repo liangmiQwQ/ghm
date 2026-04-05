@@ -86,12 +86,11 @@ function searchItems(query: string, groups: RepoGroup[], root: string): SearchIt
   const items: SearchItem[] = []
   const matchedOwners = new Set<string>()
 
-  // Search projects - match by project name or owner/name
+  // Search projects - only match by project name
   const projectMatches: SearchItem[] = []
   for (const group of groups) {
     for (const repo of group.repos) {
-      const fullName = `${repo.owner}/${repo.name}`.toLowerCase()
-      if (repo.name.toLowerCase().includes(q) || fullName.includes(q)) {
+      if (repo.name.toLowerCase().includes(q)) {
         projectMatches.push({
           type: 'project',
           label: repo.name,
