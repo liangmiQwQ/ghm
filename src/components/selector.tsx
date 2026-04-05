@@ -228,7 +228,7 @@ function ListModeView({
       while (groupEnd < items.length && items[groupEnd].type !== 'blank') {
         groupEnd++
       }
-      if (groupEnd - 1 <= scrollOffset) {
+      if (groupEnd <= scrollOffset) {
         stickyOwner = null
       }
     }
