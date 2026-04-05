@@ -25,8 +25,4 @@ export default defineConfig({
     semi: false,
     sortPackageJson: true,
   },
-  test: {
-    exclude: ['.root/**', 'node_modules/**'],
-    fileParallelism: false,
-  },
 })
