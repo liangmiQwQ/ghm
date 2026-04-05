@@ -333,13 +333,12 @@ function SearchModeView({
 
 function Footer({ path: footerPath, noMatch }: { path: string; noMatch: boolean }) {
   const text = noMatch
-    ? pc.dim(pc.italic('\n No directory found'))
+    ? pc.dim(pc.italic('No directory found'))
     : pc.dim('Path: ') + pc.gray(toTildePath(footerPath))
   return (
-    <>
-      <Text> </Text>
+    <Box marginTop={1}>
       <Text>{text}</Text>
-    </>
+    </Box>
   )
 }
 
