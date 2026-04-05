@@ -53,6 +53,8 @@ mo setup
 > ```json
 > "window.openFoldersInNewWindow": "off"
 > ```
+>
+> Setting `code -r` as your editor in `mo setup` have the same effect as well.
 
 ## Config
 
