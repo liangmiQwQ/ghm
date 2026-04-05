@@ -404,11 +404,25 @@ export function Selector({ root, groups, onSelect, onCancel }: SelectorProps) {
     if (state === 'succeed' || state === 'error') return
 
     // Cancel
-    if (key.escape || (key.ctrl && input === 'c')) {
+    if (key.ctrl && input === 'c') {
       setState('error')
       setErrorMessage('Canceled.')
       onCancel()
       setTimeout(() => exit(), 0)
+      return
+    }
+
+    // Escape - clear search or cancel
+    if (key.escape) {
+      if (query) {
+        setQuery('')
+        resetCursor(listItems)
+      } else {
+        setState('error')
+        setErrorMessage('Canceled.')
+        onCancel()
+        setTimeout(() => exit(), 0)
+      }
       return
     }
 
