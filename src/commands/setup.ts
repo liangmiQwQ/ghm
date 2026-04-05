@@ -12,6 +12,7 @@ import pc from 'picocolors'
 import { success, toTildePath } from '../utils/format'
 import { ensureToolReady, runCommand } from '../utils/commands'
 import { promptConfirm, promptMultiselect, promptText } from '../utils/prompt'
+import { getRestartFlagPath } from '../utils/runner'
 
 const CONFIG_SCHEMA_URL = 'https://raw.githubusercontent.com/liangmiQwQ/mo/main/config_schema.json'
 const ALIAS_NAME_PATTERN = '[A-Za-z_][A-Za-z0-9_-]*'
@@ -59,8 +60,15 @@ export async function runSetupCommand(): Promise<void> {
 
   await writeConfigFile(configPath, rootPath, selectedShells, aliases, editor)
   await syncShellrc(selectedShells)
+  await createRestartFlag()
 
   success(`Setup completed. Config written to ${pc.cyan(toTildePath(configPath))}`)
+  success('Please restart your shell to apply shell integration changes!')
+}
+
+async function createRestartFlag(): Promise<void> {
+  const flagPath = getRestartFlagPath()
+  await writeFile(flagPath, '', 'utf8')
 }
 
 export async function promptRunSetupOnMissingConfig(runSetup: () => Promise<void>): Promise<void> {

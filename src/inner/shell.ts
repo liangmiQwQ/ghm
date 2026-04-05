@@ -4,6 +4,7 @@ import type { CommandAliasConfig } from '../utils/alias'
 import { buildAliasLines } from '../utils/alias'
 import { getDefaultConfigPath, loadConfig, supportedShells } from '../utils/config'
 import { error } from '../utils/error'
+import { getRestartFlagPath } from '../utils/runner'
 
 export function generateShellIntegration(shell: string): string {
   if (!isValidShell(shell)) {
@@ -20,8 +21,11 @@ export function generateShellIntegration(shell: string): string {
 
 function generateBashZshIntegration(aliases: CommandAliasConfig): string {
   const lines = buildAliasLines(aliases, (name, target) => `alias ${name}='${target}'`)
+  const flagPath = getRestartFlagPath()
   return [
     '# mo shell integration script',
+    `# Clear restart flag if present (setup completed in previous shell)`,
+    `rm -f "${flagPath}" 2>/dev/null || true`,
     'mo() {',
     '  command mo "$@" || return $?',
     '  local mo_cd_result',
@@ -37,8 +41,11 @@ function generateBashZshIntegration(aliases: CommandAliasConfig): string {
 
 function generateFishIntegration(aliases: CommandAliasConfig): string {
   const lines = buildAliasLines(aliases, (name, target) => `alias ${name} '${target}'`)
+  const flagPath = getRestartFlagPath()
   return [
     '# mo shell integration script',
+    '# Clear restart flag if present (setup completed in previous shell)',
+    `rm -f "${flagPath}" 2>/dev/null; or true`,
     'function mo',
     '  command mo $argv',
     '  or return $status',

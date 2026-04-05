@@ -10,10 +10,11 @@ import { promptRunSetupOnMissingConfig, runSetupCommand } from './commands/setup
 import { error } from './utils/error'
 import { syncShellrc } from './utils/shellrc'
 import type { GlobalUserConfig } from './utils/config'
-import { preventRunning, userBinName } from './utils/runner'
+import { checkRestartRequired, preventRunning, userBinName } from './utils/runner'
 
 const cli = cac(userBinName)
 await preventRunning()
+checkRestartRequired()
 
 function withConfig<T extends any[]>(
   handler: (config: GlobalUserConfig, ...args: T) => Promise<void> | void,
