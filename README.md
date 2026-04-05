@@ -2,10 +2,9 @@
 
 **M**anage your **O**pensource projects!
 
-It just keeps your repos organized like this:
+`mo` keeps your GitHub repos organized under a single root directory:
 
-```text
-
+```
 ~/code
 ├── vitejs
 │   ├── vite
@@ -13,107 +12,51 @@ It just keeps your repos organized like this:
 └── vuejs
     ├── core
     └── vue
-
-```
-
-## Install
-
-```bash
-
-vp install -g @liangmi/mo
-
 ```
 
 ## Requirements
 
-- macOS or Linux (Windows is not supported)
-- global install (local install is not supported for runtime usage)
+- macOS or Linux
 - `git`
 - GitHub CLI `gh` authenticated (`gh auth status`)
 
-## Quick Start
+## Install
 
-Run setup once:
+```bash
+npm install -g @liangmi/mo
+```
+
+## Setup
+
+Run once to initialize config and shell integration:
 
 ```bash
 mo setup
 ```
 
-`mo setup` will:
-
-1. check `git`
-2. check `gh` authentication
-3. ask for your projects root directory
-4. ask which shell(s) you use (`zsh`, `bash`, `fish`)
-5. optionally collect aliases for `mo clone`, `mo list`, and `mo cd`
-6. write `~/.config/morc.json`
-7. sync managed shellrc blocks
-
-After setup:
-
-```bash
-mo clone vitejs/vite
-mo list
-mo cd
-```
-
 ## Commands
 
-### `mo setup`
+| Command                   | Alias   | Description                               |
+| ------------------------- | ------- | ----------------------------------------- |
+| `mo setup`                |         | Initialize config and shell integration   |
+| `mo clone <owner>/<repo>` | `mo c`  | Clone a repo into `<root>/<owner>/<repo>` |
+| `mo list`                 | `mo ls` | List all managed repos                    |
+| `mo cd [owner[/repo]]`    | `mo d`  | Jump to root, owner, or repo directory    |
+| `mo edit [owner[/repo]]`  | `mo e`  | Open a repo in your editor                |
+| `mo open [owner[/repo]]`  | `mo o`  | Open a repo in Finder/Explorer            |
 
-Initialize config and shell integration.
-
-### `mo clone <owner>/<repo>`
-
-Clone a GitHub repository into `<root>/<owner>/<repo>`.
-
-Alias: `mo c <owner>/<repo>`
-
-Example:
-
-```bash
-mo clone vuejs/core
-```
-
-### `mo list`
-
-List repositories under your configured root.
-
-Alias: `mo ls`
-
-### `mo cd [target]`
-
-Resolve and jump to a managed path in your shell integration function.
-
-Without `target`, it opens an interactive selector for:
-
-- root
-- owner directory
-- repository directory
-
-With `target`, supported forms are:
-
-- `root` or `.`
-- `<owner>`
-- `<owner>/<repo>`
-
-Alias: `mo d`
+`mo cd`, `mo edit`, and `mo open` open an interactive selector when called without arguments.
 
 ## Config
 
-Default config path:
-
-```text
-~/.config/morc.json
-```
-
-Example:
+`~/.config/morc.json`:
 
 ```json
 {
   "$schema": "https://raw.githubusercontent.com/liangmiQwQ/mo/main/config_schema.json",
   "root": "~/code",
   "shells": ["zsh"],
+  "editor": "code",
   "alias": {
     "clone": ["k"],
     "list": ["li"],
@@ -122,34 +65,9 @@ Example:
 }
 ```
 
-### Fields
-
-- `root` (required): absolute path or `~` path for your projects directory
-- `shells` (required): one or more of `zsh`, `bash`, `fish`
-- `alias` (optional): alias arrays for `clone`, `list`, `cd`
-
-Alias names must match:
-
-```text
-[A-Za-z_][A-Za-z0-9_-]*
-```
-
-## Shell Integration
-
-`mo` manages shell integration blocks in your shellrc files:
-
-- `~/.zshrc`
-- `~/.bashrc`
-- `~/.config/fish/config.fish`
-
-## Notes
-
-- If you run config-required commands without config, `mo` prompts you to run `mo setup`.
-- `mo list` only shows repositories that are Git repos with a GitHub remote.
-
 ## Contribution
 
-We're really excited to receive your contributions! Please see [ROADMAP.md](./ROADMAP.md) for details!
+See [ROADMAP.md](./ROADMAP.md) for what's planned.
 
 ## License
 
