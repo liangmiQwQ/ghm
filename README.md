@@ -2,29 +2,23 @@
 
 **M**anage your **O**pensource projects!
 
-`mo` keeps your GitHub repos organized under a single root directory:
+<p align="center">
+  <img src="./docs/3a3f8a5d4c3e5c4f07227cb9cd80b346.png" width="460" alt="mo cd interactive selector" />
+</p>
 
-```
-~/code
-├── vitejs
-│   ├── vite
-│   └── devtools
-└── vuejs
-    ├── core
-    └── vue
-```
-
-## Requirements
-
-- macOS or Linux
-- `git`
-- GitHub CLI `gh` authenticated (`gh auth status`)
+`mo` keeps your GitHub repos organized under a single root directory.
 
 ## Install
 
 ```bash
-npm install -g @liangmi/mo
+npm i -g @liangmi/mo
 ```
+
+### Requirement
+
+- macOS or Linux
+- `git`
+- GitHub CLI `gh` authenticated (`gh auth status`)
 
 ## Setup
 
