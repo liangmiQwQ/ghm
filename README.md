@@ -3,7 +3,7 @@
 **M**anage your **O**pensource projects!
 
 <p align="center">
-  <img src="./docs/3a3f8a5d4c3e5c4f07227cb9cd80b346.png" width="460" alt="mo cd interactive selector" />
+  <img src="./docs/3a3f8a5d4c3e5c4f07227cb9cd80b346.png" width="520" alt="mo cd interactive selector" />
 </p>
 
 `mo` keeps your GitHub repos organized under a single root directory.
