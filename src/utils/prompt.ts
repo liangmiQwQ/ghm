@@ -15,16 +15,15 @@ const onSetupCancel = () => {
   error('Setup canceled.', 78)
 }
 
-function catchCancel<T>(
+async function catchCancel<T>(
   promise: Promise<T | undefined>,
   onCancel: () => void = onSetupCancel,
 ): Promise<T> {
-  return promise.then((result) => {
-    if (result === undefined) {
-      onCancel()
-    }
-    return result as T
-  })
+  const result = await promise
+  if (result === undefined) {
+    onCancel()
+  }
+  return result as T
 }
 
 export async function promptText(
