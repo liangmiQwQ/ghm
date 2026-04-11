@@ -1,4 +1,4 @@
-# Fork and Remote Control
+# RFC: Fork and Remote Control
 
 Stage Four adds `mo fork` for forking GitHub repos and a set of subcommands for managing git remotes within the `mo` directory structure.
 

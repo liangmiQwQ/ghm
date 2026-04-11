@@ -1,4 +1,4 @@
-# Config System
+# RFC: Config System
 
 `mo` reads a single JSON config file at `~/.config/morc.json`. If the file is missing, empty, or contains an invalid `root` path, the program exits with a clear error and tells the user to run `mo setup`.
 

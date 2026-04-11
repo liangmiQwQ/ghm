@@ -1,4 +1,4 @@
-# `list` command
+# RFC: `list` command
 
 `mo list` prints all repositories found under the configured code root.
 

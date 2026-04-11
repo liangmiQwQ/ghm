@@ -1,4 +1,4 @@
-# `edit` command
+# RFC: `edit` command
 
 `mo edit` opens a repository in the configured editor. It shares the same interactive selector as `mo cd`.
 

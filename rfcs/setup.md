@@ -1,4 +1,4 @@
-# `setup` command
+# RFC: `setup` command
 
 `mo setup` is an interactive wizard that checks prerequisites, collects user preferences, writes `morc.json`, and syncs the shell rc block.
 

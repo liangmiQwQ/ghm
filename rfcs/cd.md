@@ -1,4 +1,4 @@
-# `cd` command
+# RFC: `cd` command
 
 `mo cd` opens an interactive selector that lets the user navigate to any repo, owner directory, or the code root. Because a child process cannot change the parent shell's working directory, the command is implemented as a shell function.
 

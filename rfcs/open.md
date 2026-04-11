@@ -1,4 +1,4 @@
-# `open` command
+# RFC: `open` command
 
 `mo open` opens a repository in the system file manager. It is a thin wrapper around `mo edit -e open`.
 

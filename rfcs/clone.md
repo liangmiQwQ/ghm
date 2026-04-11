@@ -1,4 +1,4 @@
-# `clone` command
+# RFC: `clone` command
 
 `mo clone` clones a GitHub repository into the structured code root managed by `mo`.
 
