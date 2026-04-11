@@ -35,11 +35,11 @@ mo setup
 | `mo setup`                |         | Initialize config and shell integration   |
 | `mo clone <owner>/<repo>` | `mo c`  | Clone a repo into `<root>/<owner>/<repo>` |
 | `mo list`                 | `mo ls` | List all managed repos                    |
-| `mo cd [owner[/repo]]`    | `mo d`  | Jump to root, owner, or repo directory    |
-| `mo edit [owner[/repo]]`  | `mo e`  | Open a repo in your editor                |
-| `mo open [owner[/repo]]`  | `mo o`  | Open a repo in Finder/Explorer            |
+| `mo cd [query]`           | `mo d`  | Jump to root, owner, or repo directory    |
+| `mo edit [query]`         | `mo e`  | Open a directory in your editor           |
+| `mo open [query]`         | `mo o`  | Open a directory in Finder/Explorer       |
 
-`mo cd`, `mo edit`, and `mo open` open an interactive selector when called without arguments.
+`mo cd`, `mo edit`, and `mo open` has the similar behavior and they open an interactive selector when called without arguments.
 
 > [!TIP]
 > If you are using `mo` with VS Code based editors, you can add this line to your editor config to prevent `mo edit` popping up a new separated window.
@@ -74,7 +74,7 @@ Please follow the [config_schema.json](./config_schema.json) if you are developi
 
 ## Contribution
 
-See [ROADMAP.md](./ROADMAP.md) for what's planned.
+We are so excited that you are willing to help improving `mo`! Please see [ROADMAP.md](./ROADMAP.md) for what's planned.
 
 ## License
 
