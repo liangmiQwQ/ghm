@@ -52,10 +52,10 @@ The prompt should happens as soon as the user enters `mo fork` command, before c
 
 Two questions:
 
-1. Would you like to fork to an organization? (Default: N)
+1. Would you like to fork to an organization? (Default: N) (skip if `--org` option is provided)
 
 If yes, prompt the user to enter the organization name, and add `--org` option to `gh repo fork`. If no, skip this question.
 
-2. What is the repo name of the fork?
+2. What is the repo name of the fork? (Skip if `--name` option is provided)
 
-Provide two default values: the same as the original repo name, `${originalOwnerName}-${repoName}`. But also allow users to enter any repo name themselves.
+Provide two default values: the same as the original repo name(default), `${originalOwnerName}-${repoName}`. But also allow users to enter any repo name themselves.
