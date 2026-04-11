@@ -28,7 +28,7 @@ If the `gh repo fork` failed to run while `clone` running or finished successful
 
 The fork command can be called without any arguments. In that case, it transform the current repo in the current dir into a fork (skip cloning). Exit with errors if the current dir is not a mo's managed repo or the user tries fork the repo to the same repo (allow the same owner even but add a prompt to confirm, just prevent the same name with the same owner). Also exit if there are already `upstream` remote.
 
-For example, `mo f -o liangmiQwQ -n mo liangmiQwQ/mo` should be failed, but `mo f -o liangmiQwQ -n wa` should be allowed but with a prmopt (before other prmopt).
+For example, `mo f -o liangmiQwQ -n mo liangmiQwQ/mo` should be failed, but `mo f liangmiQwQ/mo -o liangmiQwQ -n wa` should be allowed but with a prmopt (before other prmopt).
 
 ### Details
 
@@ -44,10 +44,6 @@ The repo created remotely could be controlled detailedly (the owner name and rep
 
 Two options `--org` (-o), `--name` (-n) could be used to specify the target org name and repo name. like `mo fork vitejs/vite -o liangmiQwQ -n vite`. And `https://github.com/liangmiQwQ/vite` should be available after the command. These two options are optional.
 
-We should provide a config field in the config file and setup command, allow users to specify the default org name for the fork. If nothing provided, we should call `gh repo fork` without `--org` option
-
-The config file should use `fork-org` as the field name, and add `Whether you always fork to an organization` before the user input in setup command and skip if user say `n`
-
 ##### Control with prompts
 
 We should prompt the user to choose the repo name and confirm the full fork path.
@@ -56,10 +52,10 @@ The prompt should happens as soon as the user enters `mo fork` command, before c
 
 Two questions:
 
-1. What is the repo name of the fork?
+1. Would you like to fork to an organization? (Default: N)
+
+If yes, prompt the user to enter the organization name, and add `--org` option to `gh repo fork`. If no, skip this question.
+
+2. What is the repo name of the fork?
 
 Provide two default values: the same as the original repo name, `${originalOwnerName}-${repoName}`. But also allow users to enter any repo name themselves.
-
-2. Are you sure to create the fork at ${ownerName}/${repoName}? (skip if no org name is set)
-
-And if users enter y, finish the fork; otherwise, prompt a input area allow them to enter the struct like `<owner>/<repo>` to specify the fork path. (Exit with error if wrong format)
