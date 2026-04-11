@@ -35,7 +35,7 @@ mo setup
 | `mo setup`                |         | Initialize config and shell integration   |
 | `mo clone <owner>/<repo>` | `mo c`  | Clone a repo into `<root>/<owner>/<repo>` |
 | `mo list`                 | `mo ls` | List all managed repos                    |
-| `mo cd [query]`           | `mo d`  | Jump to root, owner, or repo directory    |
+| `mo cd [query]`           |         | Jump to root, owner, or repo directory    |
 | `mo edit [query]`         | `mo e`  | Open a directory in your editor           |
 | `mo open [query]`         | `mo o`  | Open a directory in Finder/Explorer       |
 
@@ -66,8 +66,8 @@ Please follow the [config_schema.json](./config_schema.json) if you are developi
   "editor": "code",
   "alias": {
     "clone": ["k"],
-    "list": ["li"],
-    "cd": ["i"]
+    "cd": ["i"],
+    "edit": ["e"]
   }
 }
 ```

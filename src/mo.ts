@@ -47,7 +47,6 @@ cli
 
 cli
   .command('cd [target]', 'Resolve a repository path for shell navigation')
-  .alias('d')
   .action(withConfig((config, target?: string) => runCdCommand(target, config)))
 
 cli
