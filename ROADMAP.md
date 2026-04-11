@@ -1,8 +1,10 @@
 # `mo` Project Feature and Road Map
 
+Each feature has a dedicated RFC in the [specs](/specs) directory.
+
 ## - [x] Stage One: Basic Feature Setup
 
-### - [x] Basic Config System
+### - [x] Basic Config System - [RFC-0001](/specs/RFC-0001-config.md)
 
 Require `~/.config/morc.json` as the config file like below.
 
@@ -14,7 +16,7 @@ Require `~/.config/morc.json` as the config file like below.
 
 Exit program for no config file (as well as empty or with an unvaild path)
 
-### - [x] `clone` command
+### - [x] `clone` command - [RFC-0002](/specs/RFC-0002-clone.md)
 
 `mo clone <user>/<repo>`
 
@@ -24,7 +26,7 @@ e.g. `mo clone vitejs/devtools`
 
 It will clone the repo to `~/code/vitejs/devtools`, create dir if not exist.
 
-### - [x] `list` command
+### - [x] `list` command - [RFC-0003](/specs/RFC-0003-list.md)
 
 `mo list`
 
@@ -47,7 +49,7 @@ All the modify to shellrc should be controlled by mo. So, we need to storage use
 
 Use `preunistall` to clear the config when uninstall.
 
-### - [x] `setup` command
+### - [x] `setup` command - [RFC-0004](/specs/RFC-0004-setup.md)
 
 Add a `mo setup` command, to setup the settings and environment needed.
 
@@ -71,7 +73,7 @@ The config file should be like:
 }
 ```
 
-### - [x] `mo cd` command
+### - [x] `mo cd` command - [RFC-0005](/specs/RFC-0005-cd.md)
 
 `mo cd`
 
@@ -83,7 +85,7 @@ Because it needs to cd to the target directory, it needs to be a shell script. W
 
 ## - [x] Stage Three: Editor Support
 
-### - [x] `editor` option
+### - [x] `editor` option - [RFC-0001](/specs/RFC-0001-config.md)
 
 Add `editor` option in `~/.config/morc.json`, modify `setup` command as well.
 
@@ -94,7 +96,7 @@ Add `editor` option in `~/.config/morc.json`, modify `setup` command as well.
 }
 ```
 
-### - [x] `edit` command
+### - [x] `edit` command - [RFC-0006](/specs/RFC-0006-edit.md)
 
 Add `mo edit` command to open the repo in the editor. For example, `mo open vitejs/devtools` which actually runs `code ~/code/vitejs/devtools`.
 
@@ -102,7 +104,7 @@ The prompt logic should be similar as `mo cd` command. Use `-e` or `--editor` to
 
 Alias: `mo e` (`e` as default global alias for `edit`)
 
-### - [x] `open` command
+### - [x] `open` command - [RFC-0007](/specs/RFC-0007-open.md)
 
 Alias `mo o` (`o` as default global alias for `open`)
 
@@ -112,6 +114,6 @@ A wrapper for `mo edit -e open` to open the project in system finder / explorer.
 
 `mo edit`, `mo cd` and `mo open` essentially do the same thing, which has similar arguments and prompt logic, we should reuse the code as possible.
 
-## - [ ] Stage Four: Add `fork` and `remote` control
+## - [ ] Stage Four: Add `fork` and `remote` control - [RFC-0008](/specs/RFC-0008-fork-remote.md)
 
 It's a big feature, need `gh` and `git` commands work together, leave a blank for now.
