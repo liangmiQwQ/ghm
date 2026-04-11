@@ -1,11 +1,4 @@
----
-title: RFC-0003 list command
-status: implemented
----
-
-# RFC-0003: `list` command
-
-## Summary
+# `list` command
 
 `mo list` prints all repositories found under the configured code root.
 

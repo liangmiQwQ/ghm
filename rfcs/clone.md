@@ -1,11 +1,4 @@
----
-title: RFC-0002 clone command
-status: implemented
----
-
-# RFC-0002: `clone` command
-
-## Summary
+# `clone` command
 
 `mo clone` clones a GitHub repository into the structured code root managed by `mo`.
 

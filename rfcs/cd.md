@@ -1,11 +1,4 @@
----
-title: RFC-0005 cd command
-status: implemented
----
-
-# RFC-0005: `cd` command
-
-## Summary
+# `cd` command
 
 `mo cd` opens an interactive selector that lets the user navigate to any repo, owner directory, or the code root. Because a child process cannot change the parent shell's working directory, the command is implemented as a shell function.
 
@@ -26,7 +19,7 @@ This means `mo cd` itself must never be called directly as a plain binary invoca
 
 ## Selector UI
 
-The interactive selector is specified in [SELECTOR.md](./SELECTOR.md). Key points:
+The interactive selector is specified in [selector.md](./selector.md). Key points:
 
 - Displays `<root>`, owner directories, and individual repos in grouped list mode.
 - Supports incremental search across repo names and owner names.

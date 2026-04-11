@@ -1,11 +1,4 @@
----
-title: RFC-0006 edit command
-status: implemented
----
-
-# RFC-0006: `edit` command
-
-## Summary
+# `edit` command
 
 `mo edit` opens a repository in the configured editor. It shares the same interactive selector as `mo cd`.
 
@@ -30,7 +23,5 @@ mo e [<user>/<repo>] [-e <editor>]     # alias
 | Alias | Command   |
 | ----- | --------- |
 | `e`   | `mo edit` |
-
-## Notes
 
 `mo edit`, `mo cd`, and `mo open` share the same selector and path-resolution logic. Differences are only in the final action performed on the resolved path.

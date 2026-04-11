@@ -1,17 +1,8 @@
----
-title: RFC-0008 fork and remote control
-status: draft
----
-
-# RFC-0008: Fork and Remote Control
-
-## Summary
+# Fork and Remote Control
 
 Stage Four adds `mo fork` for forking GitHub repos and a set of subcommands for managing git remotes within the `mo` directory structure.
 
-## Status
-
-This RFC is a placeholder. The design is not finalized. Contributions and discussion are welcome via GitHub issues.
+The design is not finalized. Contributions and discussion are welcome via GitHub issues.
 
 ## Motivation
 

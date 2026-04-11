@@ -1,11 +1,4 @@
----
-title: RFC-0007 open command
-status: implemented
----
-
-# RFC-0007: `open` command
-
-## Summary
+# `open` command
 
 `mo open` opens a repository in the system file manager. It is a thin wrapper around `mo edit -e open`.
 
