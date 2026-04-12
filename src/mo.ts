@@ -7,6 +7,8 @@ import { runCdCommand } from './commands/cd'
 import { runEditCommand, runOpenCommand } from './commands/edit'
 import { runForkCommand } from './commands/fork'
 import type { ForkOptions } from './commands/fork'
+import { runInitCommand } from './commands/init'
+import type { InitOptions } from './commands/init'
 import { runListCommand } from './commands/list'
 import { promptRunSetupOnMissingConfig, runSetupCommand } from './commands/setup'
 import { error } from './utils/error'
@@ -52,6 +54,14 @@ cli
       runForkCommand(repo, config, options ?? {}),
     ),
   )
+
+cli
+  .command('init', 'Initialize current directory as a new GitHub repository')
+  .alias('i')
+  .option('--public', 'Create as public repository (skip prompt)')
+  .option('--private', 'Create as private repository (skip prompt)')
+  .option('-p, --push', 'Push current branch after repo creation')
+  .action(withConfig((config, options?: InitOptions) => runInitCommand(config, options ?? {})))
 
 cli
   .command('list', 'List repositories under configured root')
