@@ -58,20 +58,7 @@ export async function runSetupCommand(): Promise<void> {
   await ensureShellCommandsAvailable(selectedShells)
   const aliases = await promptAliasConfig(existingConfig?.alias)
 
-  let forkOrg: string | undefined
-  const wantsForkOrg = await promptConfirm(
-    'Whether you always fork to an organization?',
-    'wantsForkOrg',
-    { default: existingConfig?.forkOrg != null },
-  )
-  if (wantsForkOrg) {
-    const forkOrgInput = await promptText('Default org name for forking repos:', 'forkOrg', {
-      initial: existingConfig?.forkOrg ?? '',
-    })
-    forkOrg = forkOrgInput.trim() || undefined
-  }
-
-  await writeConfigFile(configPath, rootPath, selectedShells, aliases, editor, forkOrg)
+  await writeConfigFile(configPath, rootPath, selectedShells, aliases, editor)
   await syncShellrc(selectedShells)
   await createRestartFlag()
 
@@ -169,7 +156,6 @@ async function writeConfigFile(
   shells: SupportedShell[],
   alias?: CommandAliasConfig,
   editor?: string,
-  forkOrg?: string,
 ): Promise<void> {
   const content = `${JSON.stringify(
     {
@@ -178,7 +164,6 @@ async function writeConfigFile(
       ...(editor ? { editor } : {}),
       shells,
       ...(alias ? { alias } : {}),
-      ...(forkOrg ? { 'fork-org': forkOrg } : {}),
     },
     null,
     2,

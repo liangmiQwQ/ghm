@@ -23,7 +23,9 @@ export async function runForkCommand(
   }
 
   const parsed = parseRepo(repo)
-  const forkOrg = options.org ?? config.forkOrg
+
+  // Q1: Would you like to fork to an organization? (skip if --org provided)
+  const forkOrg = await resolveForkOrg(options.org)
 
   // Same owner with same name → immediate error before any prompts
   if (forkOrg === parsed.owner && options.name === parsed.name && options.name !== undefined) {
@@ -40,24 +42,11 @@ export async function runForkCommand(
     if (!ok) error('Fork canceled.', 78)
   }
 
+  // Q2: What is the repo name of the fork? (skip if --name provided)
   const forkName = await resolveForkName(parsed.name, parsed.owner, options.name)
 
   // After resolving name, check same org+name
   if (forkOrg === parsed.owner && forkName === parsed.name) {
-    error(`Cannot fork ${parsed.owner}/${parsed.name} to itself.`)
-  }
-
-  // Q2: confirm path (skip if no org configured)
-  let finalOrg = forkOrg
-  let finalName = forkName
-  if (forkOrg) {
-    const resolved = await resolveForkPathWithConfirm(forkOrg, forkName)
-    finalOrg = resolved.org
-    finalName = resolved.name
-  }
-
-  // Re-check after custom path input
-  if (finalOrg === parsed.owner && finalName === parsed.name) {
     error(`Cannot fork ${parsed.owner}/${parsed.name} to itself.`)
   }
 
@@ -74,13 +63,13 @@ export async function runForkCommand(
   }
 
   const cloneUrl = `https://github.com/${parsed.owner}/${parsed.name}.git`
-  const forkLabel = finalOrg ? `${finalOrg}/${finalName}` : finalName
+  const forkLabel = forkOrg ? `${forkOrg}/${forkName}` : forkName
   const spinner = startSpinner(
     `Cloning ${pc.bold(`${parsed.owner}/${parsed.name}`)} and forking to ${pc.bold(forkLabel)}...`,
   )
 
   const cloneExec = x('git', ['clone', '--progress', cloneUrl, targetDir], { throwOnError: false })
-  const ghArgs = buildGhForkArgs(parsed.owner, parsed.name, finalOrg, finalName)
+  const ghArgs = buildGhForkArgs(parsed.owner, parsed.name, forkOrg, forkName)
   const forkExec = x('gh', ghArgs, { throwOnError: false })
 
   // If fork fails, kill the clone process
@@ -123,8 +112,8 @@ export async function runForkCommand(
 
   success(`Forked ${pc.bold(`${parsed.owner}/${parsed.name}`)} to ${pc.bold(forkLabel)}`)
 
-  const effectiveOrg = finalOrg ?? (await getGhAuthUser())
-  await configureRemotes(targetDir, parsed.owner, parsed.name, effectiveOrg, finalName)
+  const effectiveOrg = forkOrg ?? (await getGhAuthUser())
+  await configureRemotes(targetDir, parsed.owner, parsed.name, effectiveOrg, forkName)
 
   console.log(`  ${pc.dim('→')} ${pc.cyan(toTildePath(targetDir))}`)
 }
@@ -146,7 +135,8 @@ async function runForkInPlace(config: GlobalUserConfig, options: ForkOptions): P
     error('No "origin" remote found in current repository.')
   }
 
-  const forkOrg = options.org ?? config.forkOrg
+  // Q1: Would you like to fork to an organization? (skip if --org provided)
+  const forkOrg = await resolveForkOrg(options.org)
 
   if (forkOrg === detected.owner && options.name === detected.name && options.name !== undefined) {
     error(`Cannot fork ${detected.owner}/${detected.name} to itself.`)
@@ -161,27 +151,16 @@ async function runForkInPlace(config: GlobalUserConfig, options: ForkOptions): P
     if (!ok) error('Fork canceled.', 78)
   }
 
+  // Q2: What is the repo name of the fork? (skip if --name provided)
   const forkName = await resolveForkName(detected.name, detected.owner, options.name)
 
   if (forkOrg === detected.owner && forkName === detected.name) {
     error(`Cannot fork ${detected.owner}/${detected.name} to itself.`)
   }
 
-  let finalOrg = forkOrg
-  let finalName = forkName
-  if (forkOrg) {
-    const resolved = await resolveForkPathWithConfirm(forkOrg, forkName)
-    finalOrg = resolved.org
-    finalName = resolved.name
-  }
-
-  if (finalOrg === detected.owner && finalName === detected.name) {
-    error(`Cannot fork ${detected.owner}/${detected.name} to itself.`)
-  }
-
-  const forkLabel = finalOrg ? `${finalOrg}/${finalName}` : finalName
+  const forkLabel = forkOrg ? `${forkOrg}/${forkName}` : forkName
   const spinner = startSpinner(`Forking to ${pc.bold(forkLabel)}...`)
-  const ghArgs = buildGhForkArgs(detected.owner, detected.name, finalOrg, finalName)
+  const ghArgs = buildGhForkArgs(detected.owner, detected.name, forkOrg, forkName)
   const result = await x('gh', ghArgs, { throwOnError: false })
   stopSpinner(spinner)
 
@@ -191,8 +170,8 @@ async function runForkInPlace(config: GlobalUserConfig, options: ForkOptions): P
 
   success(`Forked ${pc.bold(`${detected.owner}/${detected.name}`)} to ${pc.bold(forkLabel)}`)
 
-  const effectiveOrg = finalOrg ?? (await getGhAuthUser())
-  await configureRemotes(cwd, detected.owner, detected.name, effectiveOrg, finalName)
+  const effectiveOrg = forkOrg ?? (await getGhAuthUser())
+  await configureRemotes(cwd, detected.owner, detected.name, effectiveOrg, forkName)
 }
 
 async function resolveForkName(
@@ -218,30 +197,23 @@ async function resolveForkName(
   return trimmed
 }
 
-async function resolveForkPathWithConfirm(
-  org: string,
-  name: string,
-): Promise<{ org: string; name: string }> {
-  const confirmed = await promptConfirm(
-    `Create fork at ${pc.cyan(`${org}/${name}`)}?`,
-    'confirmFork',
+async function resolveForkOrg(orgOption: string | undefined): Promise<string | undefined> {
+  if (orgOption) return orgOption
+
+  const wantsOrg = await promptConfirm(
+    'Would you like to fork to an organization?',
+    'wantsForkOrg',
+    { default: false },
   )
 
-  if (confirmed) return { org, name }
+  if (!wantsOrg) return undefined
 
-  const input = await promptText('Enter fork path (<owner>/<repo>):', 'customForkPath')
-
+  const input = await promptText('Organization name:', 'forkOrg')
   const trimmed = input.trim()
   if (!trimmed) {
-    error('Fork canceled.', 78)
+    error('Organization name cannot be empty.', 78)
   }
-
-  const match = trimmed.match(/^([^/]+)\/([^/]+)$/)
-  if (!match) {
-    error('Invalid fork path format. Use <owner>/<repo>.', 78)
-  }
-
-  return { org: match[1], name: match[2] }
+  return trimmed
 }
 
 function buildGhForkArgs(
