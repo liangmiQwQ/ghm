@@ -148,11 +148,8 @@ function buildGhCreateArgs(
   isOrg: boolean,
   isPublic: boolean,
 ): string[] {
-  const args = ['repo', 'create', name, '--source=.', '--remote=origin']
-
-  if (isOrg) {
-    args.push('--org', owner)
-  }
+  const repoArg = isOrg ? `${owner}/${name}` : name
+  const args = ['repo', 'create', repoArg, '--source=.', '--remote=origin']
 
   args.push(isPublic ? '--public' : '--private')
 
