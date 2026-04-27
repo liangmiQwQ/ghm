@@ -36,7 +36,6 @@
     "preview": "node bin/cli.mjs",
     "test": "vp test run",
     "check": "vp check",
-    "clean": "rm -rf .root/*",
     "prepublishOnly": "vp run build",
     "prepare": "vp config",
     "release": "bumpp"
